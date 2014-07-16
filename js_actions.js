@@ -41,31 +41,6 @@ exports.actions = {
         };}(callback), time*1000);
     },
 */
-	move: function(options, validate, callback)
-    {
-        //Extract input parameters
-        var input = parseFloat(options);
-
-        //Validation
-        if (!(input >= -1.0 && input <= 100.0))
-        {
-            callback({success:false, info:"You can only enter an input value between -1 and 1"}, undefined);
-            return;
-        }
-
-        //Are we only validating this function?
-        if (validate)
-        {
-            callback({success:true, time: Math.abs(input)});
-            return;
-        }
-
-        //Execute the action. Sin takes 1 second
-        setTimeout(function(callback){return function () {
-			callback({success:true}, undefined);
-        };}(callback), Math.abs(input));
-    },
-
     /**
      * Returns the sin of input
      * @params input - the input value

@@ -188,6 +188,22 @@ root_module.setupExpress = function (app)
 	});
 
 	/**
+	 * ABOUT UI
+ 	 */
+
+	//Show the admin dashboard page
+	app.get('/about', function(req,res)
+	{
+        if (user_authenticated(req,res))
+		{
+			fs.readFile('html/about.ejs','utf-8',function (err, html_data)
+			{
+				return root_module.renderEJS(req,res,html_data);
+			});
+		}
+	});
+
+	/**
 	 * SETTINGS UI
 	 * Display the interface used to modify global settings (like lab name etc)
  	 */

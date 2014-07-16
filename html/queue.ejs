@@ -3,6 +3,7 @@ Lab Server - Queue
 <%- include header.ejs %>
 <%
 	var queue_cache = database.valueForKey("queue", "cache");
+	queue_cache = (typeof queue_cache !== 'undefined')?queue_cache:[];
 	var totalRuntime = 0.0;
 	for (var i=0; i < queue_cache.length; i++)
 	{

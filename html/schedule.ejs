@@ -162,7 +162,7 @@ if (timezone)
 			editable: true,
 <%
 var calendarEvents = database.valueForKey("calendar", "schedule");
-var calendarString = JSON.stringify(calendarEvents);
+var calendarString = (typeof calendarEvents !== 'undefined')?JSON.stringify(calendarEvents):'{}';
 %>
 			events: <%- calendarString %>
 		});

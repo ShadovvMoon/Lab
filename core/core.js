@@ -64,8 +64,8 @@ core.createLab = (function (app,callback)
 		function startMessage() {
             console.log("");
             console.log("Lab Server");
-            console.log("Version: 1.0.2");
-            console.log("  Build: 2");
+            console.log("Version: 1.0.3");
+            console.log("  Build: 1");
             console.log("   Date: 16/7/2014");
             defines.printSeparator();
         }
