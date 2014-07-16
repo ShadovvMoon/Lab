@@ -16,5 +16,7 @@ node index.js
 ```
 
 Once the lab server is started (see installation), press return or enter to start the interactive lab setup process. Type in the port number for which you want the lab server to run on, then press enter or return. Assuming the port is available, information about modules will be printed out, followed by the administrator login.
+
 Open a web browser and navigate to http://localhost:**port**, where port is the port number you typed into the setup process. Login with the username and **password provided in the setup**. Click the Admin drop down menu in the upper right hand corner and then select **My Profile**. Enter the **password provided in the setup** as the old password, then type in a new password and click **Save**.
+
 Click on the **General** link in the sidebar. Type in a name for your lab server, generate a UID and then click Save
