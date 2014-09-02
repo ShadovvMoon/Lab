@@ -104,10 +104,12 @@ defines.printDots = function(dotNum)
     }
 };
 defines.clearConsole = function() {
-    var lines = process.stdout.getWindowSize()[1];
-    for (var i = 0; i < lines; i++) {
-        defines.prettyConsole('\r\n');
-    }
+	if (typeof process.stdout.getWindowSize !== 'undefined') {
+    	var lines = process.stdout.getWindowSize()[1];
+    	for (var i = 0; i < lines; i++) {
+      	  defines.prettyConsole('\r\n');
+    	}
+	}
 }
 
 

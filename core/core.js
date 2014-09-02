@@ -65,7 +65,7 @@ core.createLab = (function (app,callback)
             console.log("");
             console.log("Lab Server");
             console.log("Version: 1.0.3");
-            console.log("  Build: 1");
+            console.log("  Build: 2");
             console.log("   Date: 16/7/2014");
             defines.printSeparator();
         }
