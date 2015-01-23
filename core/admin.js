@@ -34,7 +34,6 @@ core     = require('./core');
 brokers  = require('./broker');
 path 	 = require('path');
 calendar = require('./calendar')
-js_actions  = require('../js_actions');
 
 /**
  * Evaluates an embedded javascript page and sends the result to the client.
@@ -49,7 +48,7 @@ root_module.renderEJS = function(req,res,source_html, page_options)
 	try
 	{
 		page_options = (typeof page_options !== 'undefined') ? page_options : {};
-		var compiled = ejs.compile(source_html, { filename: path.join(process.cwd(), 'html/file.ejs')});
+		var compiled = ejs.compile(source_html, { filename: path.join(process.cwd(), 'core/html/file.ejs')});
 		var html = compiled({ admin_module:root_module, database_module: database, page_options: page_options});
 	 	res.send(html);
 	}
@@ -160,7 +159,7 @@ root_module.setupExpress = function (app)
 		if (req.user) return res.redirect('/dashboard');
 		else
 		{
-			fs.readFile('html/login.ejs','utf-8',function (err, html_data)
+			fs.readFile('core/html/login.ejs','utf-8',function (err, html_data)
 			{
 				return root_module.renderEJS(req,res,html_data);
 			});
@@ -196,7 +195,7 @@ root_module.setupExpress = function (app)
 	{
         if (user_authenticated(req,res))
 		{
-			fs.readFile('html/about.ejs','utf-8',function (err, html_data)
+			fs.readFile('core/html/about.ejs','utf-8',function (err, html_data)
 			{
 				return root_module.renderEJS(req,res,html_data);
 			});
@@ -213,7 +212,7 @@ root_module.setupExpress = function (app)
 	{
         if (user_authenticated(req,res))
 		{
-			fs.readFile('html/dashboard.ejs','utf-8',function (err, html_data)
+			fs.readFile('core/html/dashboard.ejs','utf-8',function (err, html_data)
 			{
 				return root_module.renderEJS(req,res,html_data);
 			});
@@ -245,7 +244,7 @@ root_module.setupExpress = function (app)
 	{
         if (user_authenticated(req,res))
 		{
-			fs.readFile('html/profile.ejs','utf-8',function (err, html_data)
+			fs.readFile('core/html/profile.ejs','utf-8',function (err, html_data)
 			{
 				return root_module.renderEJS(req,res,html_data, req.query);
 			});
@@ -305,7 +304,7 @@ root_module.setupExpress = function (app)
 	{
         if (user_authenticated(req,res))
 		{
-			fs.readFile('html/schedule.ejs','utf-8',function (err, html_data)
+			fs.readFile('core/html/schedule.ejs','utf-8',function (err, html_data)
 			{
 				return root_module.renderEJS(req,res,html_data);
 			});
@@ -336,7 +335,7 @@ root_module.setupExpress = function (app)
 	{
         if (user_authenticated(req,res))
 		{
-			fs.readFile('html/queue.ejs','utf-8',function (err, html_data)
+			fs.readFile('core/html/queue.ejs','utf-8',function (err, html_data)
 			{
 				return root_module.renderEJS(req,res,html_data);
 			});
@@ -365,7 +364,7 @@ root_module.setupExpress = function (app)
 	{
         if (user_authenticated(req,res))
 		{
-			fs.readFile('html/brokers.ejs','utf-8',function (err, html_data)
+			fs.readFile('core/html/brokers.ejs','utf-8',function (err, html_data)
 			{
 				return root_module.renderEJS(req,res,html_data);
 			});
@@ -377,7 +376,7 @@ root_module.setupExpress = function (app)
 	{
         if (user_authenticated(req,res))
 		{
-			fs.readFile('html/edit_broker.ejs','utf-8',function (err, html_data)
+			fs.readFile('core/html/edit_broker.ejs','utf-8',function (err, html_data)
 			{
 				return root_module.renderEJS(req,res,html_data, req.query);
 			});
@@ -439,7 +438,7 @@ root_module.setupExpress = function (app)
 			if (database.getKeys("brokers").indexOf(new_guid) != -1 && new_guid != old_id)
 			{
 				//Broker already exists.
-				fs.readFile('html/edit_broker.ejs','utf-8',function (err, html_data)
+				fs.readFile('core/html/edit_broker.ejs','utf-8',function (err, html_data)
 				{
 					root_module.renderEJS(req,res,html_data, req.query);
 				});

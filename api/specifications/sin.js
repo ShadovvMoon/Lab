@@ -1,5 +1,3 @@
-js_validator = require("../core/js_validator");
-
 /**
  * Creates a JavaScript that can be executed in the JSEngine.
  * @param experimentSpecification

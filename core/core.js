@@ -4,14 +4,14 @@
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- 
+
  * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- 
+
  * Redistributions in binary form must reproduce the above copyright notice, this
  * list of conditions and the following disclaimer in the documentation and/or
  * other materials provided with the distribution.
- 
+
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -34,7 +34,7 @@ var experiment  = require('./experiment');
 var jsengine    = require('./js_engine');
 var jsvalidator = require('./js_validator');
 var jsspec      = require('./js_spec');
-       calendar = require('./calendar')
+calendar = require('./calendar')
 var portscanner = require('portscanner');
 var readline = require('readline');
 
@@ -61,12 +61,12 @@ core.createLab = (function (app,callback)
         //Generate a random secret
         var secret = buf.toString('hex');
 
-		function startMessage() {
+        function startMessage() {
             console.log("");
             console.log("Lab Server");
-            console.log("Version: 1.0.3");
-            console.log("  Build: 2");
-            console.log("   Date: 16/7/2014");
+            console.log("Version: 1.0.4");
+            console.log("  Build: 1");
+            console.log("   Date: 23/1/2015");
             defines.printSeparator();
         }
 
@@ -94,106 +94,109 @@ core.createLab = (function (app,callback)
             app.use(passport.session());
             app.use(express.methodOverride());
             app.use(app.router);
-            app.use(express.static(path.join(process.cwd() , '/public')));
+            app.use(express.static(path.join(process.cwd() , '/core/public')));
             app.use(express.logger());
 
-		 	function setupLabStart() {
-	            defines.prettyConsole("available\nStarting server...\n");
-	            startLab();
-				database.setValueForKey("settings", "setup_complete", true, undefined)
-	        }
+            function setupLabStart() {
+                defines.prettyConsole("available\nStarting server...\n");
+                startLab();
+                database.setValueForKey("settings", "setup_complete", true, undefined)
+            }
 
-			function setupLabPrompt() {
-	            rl.question("Port for this lab: ", setupAgentPort);
-	        }
-	
-	        function setupLabPort(lab_port) {
-	            var continueFunction = function (port_number) {
-	
-	                //Store this port
-					database.setValueForKey("settings", "port", port_number, undefined)
-					core.port = port_number;
-		            app.set('port', core.port);
+            function setupLabPrompt() {
+                rl.question("Port for this lab: ", setupAgentPort);
+            }
 
-	                //Check whether the port is valid
-	                defines.prettyConsole("Checking port " + port_number + "...");
-	                portscanner.checkPortStatus(port_number, '127.0.0.1', function (error, status) {
-	                    // Status is 'open' if currently in use or 'closed' if available
-	                    if (error)
-	                        console.log(error);
-	
-	                    if (status == 'open') {
-	                        defines.prettyConsole("unavailable.\n");
-	                        return setupLabPrompt();
-	                    }
-	                    else {
-	                        setupLabStart();
-	                    }
-	                });
-	            };
-	            if (lab_port == '') {
-	                defines.prettyConsole("Finding port...");
-	                return portscanner.findAPortNotInUse(2000, 20000, '127.0.0.1', function (error, port) {
-	                    if (error) {
-	                        defines.prettyConsole("failed.\n");
-	                        return setupLabPrompt();
-	                    }
-	                    defines.prettyConsole("" + port + "\n");
-	                    return continueFunction(parseInt(port));
-	                })
-	            }
-	            else if (lab_port == 'skip') {
-	                defines.prettyConsole("Skipping port check -> assuming port is ");
-	                return setupAgentStart();
-	            }
-	            return continueFunction(parseInt(lab_port));
-	        }
-	        function setupLab() {
-	            //Does the agent need to be setup?
-	
-	            var setup_complete = database.valueForKey("settings", "setup_complete", undefined);
-	            if (setup_complete != true) {
-	                rl.question("Press enter to begin Lab setup.", function (answer) {
-	                    rl.question("Port (for this lab): ", setupLabPort);
-	                });
-	                return false;
-	            }
-	            return true;
-	        }
-			function startLab()
-			{
+            function setupLabPort(lab_port) {
+                var continueFunction = function (port_number) {
 
-			defines.prettyConsole("Loading modules\r\n");
-            calendar.setupExpress(app);
-            broker.setupExpress(app);
-            admin.setupExpress(app);
-            experiment.setupExpress(app);
-            jsengine.setupExpress(app);
-            jsvalidator.setupExpress(app);
-            jsspec.setupExpress(app);
-  			queue.startQueue(function()
+                    //Store this port
+                    database.setValueForKey("settings", "port", port_number, undefined)
+                    core.port = port_number;
+                    app.set('port', core.port);
+
+                    //Check whether the port is valid
+                    defines.prettyConsole("Checking port " + port_number + "...");
+                    portscanner.checkPortStatus(port_number, '127.0.0.1', function (error, status) {
+                        // Status is 'open' if currently in use or 'closed' if available
+                        if (error)
+                            console.log(error);
+
+                        if (status == 'open') {
+                            defines.prettyConsole("unavailable.\n");
+                            return setupLabPrompt();
+                        }
+                        else {
+                            setupLabStart();
+                        }
+                    });
+                };
+                if (lab_port == '') {
+                    defines.prettyConsole("Finding port...");
+                    return portscanner.findAPortNotInUse(2000, 20000, '127.0.0.1', function (error, port) {
+                        if (error) {
+                            defines.prettyConsole("failed.\n");
+                            return setupLabPrompt();
+                        }
+                        defines.prettyConsole("" + port + "\n");
+                        return continueFunction(parseInt(port));
+                    })
+                }
+                else if (lab_port == 'skip') {
+                    defines.prettyConsole("Skipping port check -> assuming port is ");
+                    return setupAgentStart();
+                }
+                return continueFunction(parseInt(lab_port));
+            }
+            function setupLab() {
+                //Does the agent need to be setup?
+
+                var setup_complete = database.valueForKey("settings", "setup_complete", undefined);
+                if (setup_complete != true) {
+                    rl.question("Press enter to begin Lab setup.", function (answer) {
+                        rl.question("Port (for this lab): ", setupLabPort);
+                    });
+                    return false;
+                }
+                return true;
+            }
+            function startLab()
             {
 
-                //Create the html server
-                require("http").createServer(app).listen(app.get('port'), function()
-                {
-                    defines.verbose("Running on port " + app.get('port'));
-                    defines.verbose("");
-					
-					defines.prettyConsole("\r\nRunning on port " + app.get('port') + "\r\n");
-					defines.printSeparator();
+                defines.prettyConsole("Loading modules\r\n");
+                calendar.setupExpress(app);
+                broker.setupExpress(app);
+                admin.setupExpress(app);
+                experiment.setupExpress(app);
+                jsengine.setupExpress(app);
+                jsengine.loadActions(function(err) {
+                    if (err) {
+                        return defines.prettyConsole("Error: " + err);
+                    }
+                    jsvalidator.setupExpress(app);
+                    jsspec.setupExpress(app);
+                    queue.startQueue(function()
+                    {
+                        //Create the html server
+                        require("http").createServer(app).listen(app.get('port'), function()
+                        {
+                            defines.verbose("Running on port " + app.get('port'));
+                            defines.verbose("");
+
+                            defines.prettyConsole("\r\nRunning on port " + app.get('port') + "\r\n");
+                            defines.printSeparator();
+                        });
+                    });
                 });
-       		});
-			}
-          
-			if (setupLab()) {
-				startLab();
-			}
+            };
+            if (setupLab()) {
+                startLab();
+            }
         }
 
         //Setup the lab
-		defines.clearConsole();
-		startMessage();
+        defines.clearConsole();
+        startMessage();
         setupExpress(secret);
     });
 });
@@ -221,7 +224,7 @@ core.loadSettings = function()
     core.port   = database.valueForKey("settings", "port",   undefined);
     core.host   = database.valueForKey("settings", "host",   undefined);
     core.secret = database.valueForKey("settings", "secret", undefined);
-	core.port   = (typeof core.port !== 'undefined') ? core.port : core.port = core._default_port;
+    core.port   = (typeof core.port !== 'undefined') ? core.port : core.port = core._default_port;
     core._checkSecret();
 };
 

@@ -97,14 +97,18 @@ js_spec_module._log = function (message) {
 }
 
 
+js_spec_module.specificationPath = function() {
+    return path.join(process.cwd(), "api/specifications");
+}
+
 js_spec_module._plugins = {};
 js_spec_module.setupExpress = function (app) {
-    var files = fs.readdirSync('./js_specifications/');
+    var files = fs.readdirSync(js_spec_module.specificationPath());
     for (var i in files) {
         var extension = path.extname(files[i]);
         if (extension == ".js") {
             var plugin_name = files[i].slice(0, -3);
-            var definition = require('../js_specifications/' + files[i]);
+            var definition = require(path.join(js_spec_module.specificationPath(), files[i]));
             js_spec_module._plugins[plugin_name] = definition;
             js_spec_module._log('specification ' + plugin_name + " loaded");
         }

@@ -37,8 +37,44 @@ var core        = require('./core');
 var SandCastle  = require('sandcastle').SandCastle;
 var Pool        = require('sandcastle').Pool;
 
-var js_actions  = require('../js_actions');
 var js_engine_module = module.exports;
+var js_actions = {};
+js_engine_module.apiPath = function() {
+    return path.join(process.cwd(), "api");
+};
+js_engine_module.actions = function() {
+    return js_actions;
+}
+
+js_engine_module.loadActions = function(callback) {
+    fs.readdir(js_engine_module.apiPath(), function(err, files) {
+        if (err) {
+            return callback(err);
+        }
+
+        // Loop through the files
+        defines.asyncLoop(files.length, function(loop) {
+            var file = files[loop.iteration()];
+            if (path.extname(file) == ".js") {
+
+                // Load the actions from the file
+                var actions = require(path.join(js_engine_module.apiPath(), file)).actions;
+                defines.prettyLine("   " + file, "loaded");
+
+                // Print out each action
+                for (key in actions) {
+                    defines.prettyConsole("      " + key + "\n");
+                }
+
+                // Store the actions
+                js_actions[file] = actions;
+            }
+            loop.next();
+        }, function() {
+            callback();
+        });
+    });
+}
 
 js_engine_module.setupExpress = function (app)
 {
