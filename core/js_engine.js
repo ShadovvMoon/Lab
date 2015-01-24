@@ -46,6 +46,7 @@ js_engine_module.actions = function() {
     return js_actions;
 }
 
+js_validator    = require('./js_validator.js');
 js_engine_module.loadActions = function(callback) {
     fs.readdir(js_engine_module.apiPath(), function(err, files) {
         if (err) {
