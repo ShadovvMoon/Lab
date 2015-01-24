@@ -4,14 +4,14 @@
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- 
+
  * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- 
+
  * Redistributions in binary form must reproduce the above copyright notice, this
  * list of conditions and the following disclaimer in the documentation and/or
  * other materials provided with the distribution.
- 
+
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -34,7 +34,7 @@ jsengine   		= require('./js_engine');
 jsspec     		= require('./js_spec');
 XMLHttpRequest 	= require("xhr2").XMLHttpRequest;
 
-		
+
 broker_module = module.exports;
 broker_module.brokers  = {};
 
@@ -55,22 +55,22 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
      * @param text
      * @returns encrypted_text
      */
-	function hmacsha1(key, text)
-	{
-   		return crypto.createHmac('sha1', key).update(text).digest('base64')
-	}
+    function hmacsha1(key, text)
+    {
+        return crypto.createHmac('sha1', key).update(text).digest('base64')
+    }
 
     //Creates the new broker object
-	var new_broker;
+    var new_broker;
     new_broker = new function(guid, name, key, host, port, permissions)
-	{
-		this._guid   = guid;
+    {
+        this._guid   = guid;
         this._name   = name;
-		this._key    = key;
-		this._host   = host;
-		this._port   = port;
+        this._key    = key;
+        this._host   = host;
+        this._port   = port;
         this._client = null;
-		this._permissions = permissions;
+        this._permissions = permissions;
 
         /**
          * Returns the HTTP address for the broker
@@ -79,7 +79,7 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
          */
         this.http_address = function (http_protocol) {
             http_protocol = typeof http_protocol !== 'undefined' ? http_protocol : 'http';
-			return http_protocol + "://" + this._host + ":" + this._port;
+            return http_protocol + "://" + this._host + ":" + this._port;
         };
 
         /**
@@ -115,44 +115,44 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
          * @param key - the passkey to validate
          * @returns boolean - true if the passkey is valid
          */
-		this.mit_authenticate = function(key) {
-			return (key == this._key);
-		};
+        this.mit_authenticate = function(key) {
+            return (key == this._key);
+        };
 
         /**
          * Performs the new authentication method
          * @param req - the client request
          * @returns boolean - true if the request is valid
          */
-		this.new_authentication = function(req) {
-			if (req)
-			{
-				var current_time = new Date().getTime(); //in ms
+        this.new_authentication = function(req) {
+            if (req)
+            {
+                var current_time = new Date().getTime(); //in ms
 
-				var uid        = req['guid'];
-				var token      = req['token'];
-				var time_stamp = req['time-stamp'];
+                var uid        = req['guid'];
+                var token      = req['token'];
+                var time_stamp = req['time-stamp'];
 
-				req['token'] = '';
+                req['token'] = '';
 
-				if (uid && token)
-				{
-					if (this._key)
-					{
-						var dictionaryAttribute = JSON.stringify(req);
-						var computedSignature = hmacsha1(this._key, uid+dictionaryAttribute);
-						if (computedSignature == token)
-						{
-							if (current_time-time_stamp < 10000 && current_time-time_stamp >= 0) //Needs to be less than ten seconds.
-							{
-								return true;
-							}//else defines.verbose("Authentication failed - timeout (" + (current_time-time_stamp)/1000 + ")");
-						}// else defines.verbose("Authentication failed - invalid signature " + computedSignature + " " + token);
-					}// else defines.verbose("Authentication failed - missing server key");
-				}// else defines.verbose("Authentication failed - guid or token missing");
-			}// else defines.verbose("Authentication failed - missing request");
-			return false;
-		};
+                if (uid && token)
+                {
+                    if (this._key)
+                    {
+                        var dictionaryAttribute = JSON.stringify(req);
+                        var computedSignature = hmacsha1(this._key, uid+dictionaryAttribute);
+                        if (computedSignature == token)
+                        {
+                            if (current_time-time_stamp < 10000 && current_time-time_stamp >= 0) //Needs to be less than ten seconds.
+                            {
+                                return true;
+                            }//else defines.verbose("Authentication failed - timeout (" + (current_time-time_stamp)/1000 + ")");
+                        }// else defines.verbose("Authentication failed - invalid signature " + computedSignature + " " + token);
+                    }// else defines.verbose("Authentication failed - missing server key");
+                }// else defines.verbose("Authentication failed - guid or token missing");
+            }// else defines.verbose("Authentication failed - missing request");
+            return false;
+        };
 
         /**
          * Updates the broker settings
@@ -161,7 +161,7 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
          * @param host
          * @param port
          */
-		this.update = function(guid, name, key, host, port, permissions) {
+        this.update = function(guid, name, key, host, port, permissions) {
 
             //Remove the broker from the cache
             broker_module.removeBroker(this._guid);
@@ -172,20 +172,20 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
             this._key  = key;
             this._host = host;
             this._port = port;
-			this._permissions = permissions;
+            this._permissions = permissions;
 
             //Update the database
             database.setValueForKey("brokers", this._guid, {
-                    name: this._name,
-                     key: this._key,
-                    host: this._host,
-                    port: this._port,
-					permissions: this._permissions
-                }, undefined);
+                name: this._name,
+                key: this._key,
+                host: this._host,
+                port: this._port,
+                permissions: this._permissions
+            }, undefined);
 
             //Update the cache
             broker_module.brokers[this._guid] = this;
-		};
+        };
 
         /**
          * Sends an error message to the broker
@@ -239,50 +239,50 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
 
                 return true;
             } else {
-		
-				if (data['action'] != 'notify')
-				{
-    				defines.verbose("Cannot send data to client for Broker " + this._guid);
-                	return false;
-				}
 
-				defines.verbose("Sending data to broker");
+                if (data['action'] != 'notify')
+                {
+                    defines.verbose("Cannot send data to client for Broker " + this._guid);
+                    return false;
+                }
+
+                defines.verbose("Sending data to broker");
 
                 //Initiate a new connection to the broker. This is only used for the notify action.
                 var serverGuid = database.valueForKey("settings", "guid", undefined);
-				
-				data['time-stamp'] = new Date().getTime();
-				data['uid'] = serverGuid;
-				data['token'] = '';
 
-				var dictionaryAttribute = JSON.stringify(data);
-				var computedSignature = hmacsha1(this._key, serverGuid+dictionaryAttribute);
-				data['token'] = computedSignature;
+                data['time-stamp'] = new Date().getTime();
+                data['uid'] = serverGuid;
+                data['token'] = '';
 
-				var broker_location = this.http_address() + "/lab-json";
+                var dictionaryAttribute = JSON.stringify(data);
+                var computedSignature = hmacsha1(this._key, serverGuid+dictionaryAttribute);
+                data['token'] = computedSignature;
 
-				var xhr = new XMLHttpRequest();
-				xhr.timeout = 10000;
-		        xhr.open('post', broker_location, true);
-		        xhr.setRequestHeader("Content-Type", "application/json");
-		
-		        if (typeof callback !== 'undefined')
-		        {
-		            xhr.onerror = function (e) {
-		                callback('', xhr.statusText);
-		            };
-		
-		            xhr.onload = function () {
-		                callback(xhr.responseText, '');
-		            }
-		        }
-		
-				defines.verbose(broker_location);
+                var broker_location = this.http_address() + "/lab-json";
 
-				var json_data = JSON.stringify(data);
-				defines.verbose(json_data);
-		        xhr.send(json_data);
-            
+                var xhr = new XMLHttpRequest();
+                xhr.timeout = 10000;
+                xhr.open('post', broker_location, true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+
+                if (typeof callback !== 'undefined')
+                {
+                    xhr.onerror = function (e) {
+                        callback('', xhr.statusText);
+                    };
+
+                    xhr.onload = function () {
+                        callback(xhr.responseText, '');
+                    }
+                }
+
+                defines.verbose(broker_location);
+
+                var json_data = JSON.stringify(data);
+                defines.verbose(json_data);
+                xhr.send(json_data);
+
             }
         };
 
@@ -300,14 +300,14 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
             defines.debug("Received data from broker ("+this._guid+")");
             defines.debug(JSON.stringify(json));
 
-           	if (json.action == "registerBroker") {
-				this.update(this._guid, this._name, this._key, json.host, json.port, this._permissions);
+            if (json.action == "registerBroker") {
+                this.update(this._guid, this._name, this._key, json.host, json.port, this._permissions);
 
-				//TODO: Async this call
-				var serverGuid = database.valueForKey("settings", "guid", undefined);
-				return this.sendData({labGUID: serverGuid});
+                //TODO: Async this call
+                var serverGuid = database.valueForKey("settings", "guid", undefined);
+                return this.sendData({labGUID: serverGuid});
             }
-			else if (action == 'getEffectiveQueueLength')
+            else if (action == 'getEffectiveQueueLength')
             {
                 //Two params for this action. We will ignore them for now.
                 //var userGroup = params['userGroup'];
@@ -331,28 +331,28 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
             }
             else if (action == 'getExperimentStatus')
             {
-				var experimentID     = params['experimentID'];
-				var experimentStatus = experiment.experimentStatus(experimentID);
-				return this.sendData({statusCode: experimentStatus});
-		 	}
+                var experimentID     = params['experimentID'];
+                var experimentStatus = experiment.experimentStatus(experimentID);
+                return this.sendData({statusCode: experimentStatus});
+            }
             else if (action == 'retrieveResult')
             {
-				var experimentID     = params['experimentID'];
-				var experimentStatus = experiment.experimentStatus(experimentID);
+                var experimentID     = params['experimentID'];
+                var experimentStatus = experiment.experimentStatus(experimentID);
 
-				var completed_experiments = database.getKeys("results");			
-				if (completed_experiments.indexOf(''+experimentID) != -1)
-				{
-					//Experiment has been completed and the results are available.
-					//defines.kFinished
-					var results = database.valueForKey("results", experimentID, undefined);
-					return this.sendData({statusCode: experimentStatus,
-								   experimentResults: results});
-				} 
-				else
-				{
-					return this.sendData({statusCode: experimentStatus});
-				}
+                var completed_experiments = database.getKeys("results");
+                if (completed_experiments.indexOf(''+experimentID) != -1)
+                {
+                    //Experiment has been completed and the results are available.
+                    //defines.kFinished
+                    var results = database.valueForKey("results", experimentID, undefined);
+                    return this.sendData({statusCode: experimentStatus,
+                        experimentResults: results});
+                }
+                else
+                {
+                    return this.sendData({statusCode: experimentStatus});
+                }
             }
             else if (action == 'validate')
             {
@@ -367,88 +367,88 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
                 var userGroup               = params['userGroup'];
                 var priorityHint            = params['priorityHint'];
 
-				console.log(experimentSpecification);
-				console.log(specificationID);
-				console.log(params);
-				//Permissions check
-				if (!this._permissions.batched)
-				{
-					return this.sendError("You do not have permission to submit batched lab experiments");
-				}
-				else if (this._permissions.specifications.indexOf(specificationID) == -1)
-				{
-					return this.sendError("You do not have permission to use the '"+ specificationID +"' specification.");
-				}
-				else if (!this._permissions.js_engine && specificationFormat == "js")
-				{
-					return this.sendError("You do not have permission to use the Javascript Engine.");
-				}
-		
-				//Experiment evaluation engine
-				var submission = function (client, broker) {
-	               	return function (options) {
-						if (options.accepted) {
-						    jsengine.submitScript(broker,
-										  options.script,
-							function (clientReturn)
-							{
-						        broker.sendData(clientReturn);
-						        queue.pollQueue();
-						    });
-						}
-					};
-               	}(client, this);
+                console.log(experimentSpecification);
+                console.log(specificationID);
+                console.log(params);
+                //Permissions check
+                if (!this._permissions.batched)
+                {
+                    return this.sendError("You do not have permission to submit batched lab experiments");
+                }
+                else if (this._permissions.specifications.indexOf(specificationID) == -1)
+                {
+                    return this.sendError("You do not have permission to use the '"+ specificationID +"' specification.");
+                }
+                else if (!this._permissions.js_engine && specificationFormat == "js")
+                {
+                    return this.sendError("You do not have permission to use the Javascript Engine.");
+                }
+
+                //Experiment evaluation engine
+                var submission = function (client, broker) {
+                    return function (options) {
+                        if (options.accepted) {
+                            jsengine.submitScript(broker,
+                                options.script,
+                                function (clientReturn)
+                                {
+                                    broker.sendData(clientReturn);
+                                    queue.pollQueue();
+                                });
+                        }
+                    };
+                }(client, this);
 
                 defines.verbose("Submitted experiment " + specificationFormat);
-				if (specificationFormat == "xml" || specificationFormat == "json" || typeof specificationFormat == 'undefined')
-				{
-					specificationFormat = (specificationFormat == 'json') ? 'json' : 'xml';
-					/*var useJSEngine = false; //NO reason to use the JS engine!
-					if (useJSEngine) {
-						defines.verbose("Creating specification with JSSpec");
-						jsspec.javaScriptFromSpecification(specificationFormat, specificationID,
-						experimentSpecification, submission);
-					}
-					else {*/
-						jsspec.submitScript(this, specificationFormat,
-								specificationID, experimentSpecification,
-						function (client, broker) {
-							return function (clientReturn) {
-							broker.sendData(clientReturn);
-							queue.pollQueue();
-							};
-						}(client, this));
+                if (specificationFormat == "xml" || specificationFormat == "json" || typeof specificationFormat == 'undefined')
+                {
+                    specificationFormat = (specificationFormat == 'json') ? 'json' : 'xml';
+                    /*var useJSEngine = false; //NO reason to use the JS engine!
+                     if (useJSEngine) {
+                     defines.verbose("Creating specification with JSSpec");
+                     jsspec.javaScriptFromSpecification(specificationFormat, specificationID,
+                     experimentSpecification, submission);
+                     }
+                     else {*/
+                    jsspec.submitScript(this, specificationFormat,
+                        specificationID, experimentSpecification,
+                        function (client, broker) {
+                            return function (clientReturn) {
+                                broker.sendData(clientReturn);
+                                queue.pollQueue();
+                            };
+                        }(client, this));
                     //}
-				}
-				else if (specificationFormat == "js")
-				{
-					submission({accepted: true, script: experimentSpecification});
-				}
-				else
-				{
-					return this.sendError("The specification format '"+ specificationFormat +"' does not exist.");
-				}
+                }
+                else if (specificationFormat == "js")
+                {
+                    submission({accepted: true, script: experimentSpecification});
+                }
+                else
+                {
+                    return this.sendError("The specification format '"+ specificationFormat +"' does not exist.");
+                }
             }
             else if (action == 'schedule')
             {
-				var reservationType = params['reservationType'];
+                var reservationType = params['reservationType'];
                 var startDate = params['startDate'];
-				var endDate   = params['endDate'];
-			}
+                var endDate   = params['endDate'];
+            }
             else
             {
                 return this.sendError("The '" + action + "' action is not supported by this lab server");
             }
         };
 
-		return this;
-	} (guid, name, key, host, port, permissions);
+        return this;
+    } (guid, name, key, host, port, permissions);
 
-	//Add to the broker dictionary
+    //Add to the broker dictionary
     broker_module.brokers[guid] = new_broker;
-	
-	//Return the new broker
-	return new_broker;
+
+    //Return the new broker
+    return new_broker;
 };
 
 /**
@@ -499,7 +499,7 @@ broker_module.initBrokers = function () {
             broker_data['key'],
             broker_data['host'],
             broker_data['port'],
-			broker_data['permissions']);
+            broker_data['permissions']);
     }
 };
 
@@ -565,13 +565,13 @@ broker_module.handleRequest = function (client) {
  */
 broker_module.setupExpress = function (app)
 {
-	app.get('/json', function(req, res)
-	{
+    app.get('/json', function(req, res)
+    {
         defines.debug("Received json data");
 
-		var client = {request:req,response:res,json:req.body,type:'json'};
-		broker_module.handleRequest(client);
-	});
-	broker_module.initBrokers();
-	defines.prettyLine("brokers", "loaded");
+        var client = {request:req,response:res,json:req.body,type:'json'};
+        broker_module.handleRequest(client);
+    });
+    broker_module.initBrokers();
+    defines.prettyLine("brokers", "loaded");
 };

@@ -4,14 +4,14 @@
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- 
+
  * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- 
+
  * Redistributions in binary form must reproduce the above copyright notice, this
  * list of conditions and the following disclaimer in the documentation and/or
  * other materials provided with the distribution.
- 
+
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -44,7 +44,7 @@ var status_code = defines.idle_status;
  */
 experiment_module.setupExpress = function(app)
 {
-	defines.prettyLine("experiment", "loaded");
+    defines.prettyLine("experiment", "loaded");
 }
 
 /**
@@ -53,7 +53,7 @@ experiment_module.setupExpress = function(app)
  */
 experiment_module.getLabConfiguration = function()
 {
-	return {navmenuPhoto:[{image:["http://"+ core.host +":"+ core.port+"/experiment/lab_photo.jpg"]}]};
+    return {navmenuPhoto:[{image:["http://"+ core.host +":"+ core.port+"/experiment/lab_photo.jpg"]}]};
 }
 
 /**
@@ -62,7 +62,7 @@ experiment_module.getLabConfiguration = function()
  */
 experiment_module.getStatusCode = function()
 {
-	return status_code;
+    return status_code;
 }
 
 /**
@@ -108,7 +108,7 @@ experiment_module._xmlToJS = function(str, callback)
  */
 function _escapeRegExp(str)
 {
-  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
 
 /**
@@ -120,7 +120,7 @@ function _escapeRegExp(str)
  */
 function replaceAll(find, replace, str)
 {
-  return str.replace(new RegExp(_escapeRegExp(find), 'g'), replace);
+    return str.replace(new RegExp(_escapeRegExp(find), 'g'), replace);
 }
 
 /**
@@ -129,7 +129,7 @@ function replaceAll(find, replace, str)
  * @returns {boolean}
  */
 function isNumber(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
+    return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
 /**
@@ -151,8 +151,8 @@ function _parseEscapedString(str)
  */
 experiment_module.validateExperiment = function(experimentSpecification, callback)
 {
-	try
-	{
+    try
+    {
         defines.verbose("VALIDATING EXPERIMENT");
         experiment_module._xmlToJS(experimentSpecification, function(callback) {
             return function (err, result)
@@ -192,12 +192,12 @@ experiment_module.validateExperiment = function(experimentSpecification, callbac
                 return callback({accepted:false, errorMessage:"Invalid experiment specification"});
             }
         } (callback));
-	}
-	catch (err)
-	{
-		defines.verbose(err.toString());
-		return callback({accepted:false, errorMessage:"An unknown error was encountered in the validation. Please contact the lab server owner."});
-	}
+    }
+    catch (err)
+    {
+        defines.verbose(err.toString());
+        return callback({accepted:false, errorMessage:"An unknown error was encountered in the validation. Please contact the lab server owner."});
+    }
 }
 
 //Experiment running
@@ -206,35 +206,35 @@ var current_experiment_guid = undefined;
 
 experiment_module.runningExperiment = function()
 {
-	return ((status_code != defines.idle) ? current_experiment_id : -1);
+    return ((status_code != defines.idle) ? current_experiment_id : -1);
 };
 
 experiment_module.experimentStatus = function(experimentID)
 {
-	var completed_experiments = database.getKeys("results");		
-	if (completed_experiments.indexOf(''+experimentID) != -1)
-	{
-		return defines.kFinished;
-	} 
-	else
-	{
-		var running_experiment = experiment_module.runningExperiment();
-		if (running_experiment == experimentID)
-		{
-			return defines.kRunning;
-		}
-		else
-		{
-			if (queue.containsExperiment(''+experimentID))
-			{
-				return defines.kInQueue;
-			}
-			else
-			{
-				return defines.kInvalidExperiment;
-			}
-		}
-	}
+    var completed_experiments = database.getKeys("results");
+    if (completed_experiments.indexOf(''+experimentID) != -1)
+    {
+        return defines.kFinished;
+    }
+    else
+    {
+        var running_experiment = experiment_module.runningExperiment();
+        if (running_experiment == experimentID)
+        {
+            return defines.kRunning;
+        }
+        else
+        {
+            if (queue.containsExperiment(''+experimentID))
+            {
+                return defines.kInQueue;
+            }
+            else
+            {
+                return defines.kInvalidExperiment;
+            }
+        }
+    }
 };
 
 /**
@@ -245,11 +245,11 @@ experiment_module.experimentStatus = function(experimentID)
 experiment_module._runExperiment = function(experimentSpecification)
 {
     //Turn on the equipment
-	status_code = defines.starting_status;
+    status_code = defines.starting_status;
 
-	
-	//Send the specification to the experiment machinery
-	status_code = defines.running_status;
+
+    //Send the specification to the experiment machinery
+    status_code = defines.running_status;
 
     try
     {
@@ -295,7 +295,7 @@ experiment_module._runExperiment = function(experimentSpecification)
             experiment_module._finishExperiment({});
         }
     }
-	catch (err)
+    catch (err)
     {
         defines.verbose("Experimental error occurred " + err.toString() );
 
@@ -314,7 +314,7 @@ experiment_module._finishExperiment = function(results)
 {
     defines.verbose("finishing experiment...");
 
-	//Save the results to the database
+    //Save the results to the database
     var current_experiment = experiment_module.runningExperiment();//queue.nextExperiment()-1;
     database.setValueForKey("results", current_experiment, results, undefined);
 
@@ -324,15 +324,15 @@ experiment_module._finishExperiment = function(results)
     //Notify the broker that the results are now available
     var broker_object = broker.findBroker(current_experiment_guid);
     broker_object.sendData({action: "notify", experimentId: current_experiment}, function(response,status){
-		defines.verbose(response + " " + status);
-		defines.prettyLine("notifying broker", experimentId);
-	});
-	defines.prettyLine("continuing", "");
+        defines.verbose(response + " " + status);
+        defines.prettyLine("notifying broker", experimentId);
+    });
+    defines.prettyLine("continuing", "");
     //Remove the experiment from the queue
     queue.removeExperiment(current_experiment);
     status_code = defines.idle_status;
 
-	//Poll the queue (start the next experiment in the queue)
+    //Poll the queue (start the next experiment in the queue)
     queue.pollQueue();
 }
 
@@ -346,22 +346,22 @@ experiment_module.startExperiment = function(experiment_data)
     experiment_module._runExperiment(experiment_data);
 
     /*
-	var specification = experiment_data['experimentSpecification'];
-    experiment_module._xmlToJS(specification, function(experiment_data){
-        return function(err, experimentSpecification){
-            if (experimentSpecification)
-            {
-                current_experiment_id = experiment_data['experimentId'];
-                experiment_module._runExperiment(experimentSpecification);
-            }
-            else
-            {
-                defines.verbose("Experiment " + experiment_data['experimentId'] + " failed.");
-                //database.shiftQueue(function(resultsDictionary){return function(){
-                //	queue.pollQueue();
-                //}}({error:"Experiment failed: invalid specification"}));
-            }
-        }
-    }(experiment_data));
-    */
+     var specification = experiment_data['experimentSpecification'];
+     experiment_module._xmlToJS(specification, function(experiment_data){
+     return function(err, experimentSpecification){
+     if (experimentSpecification)
+     {
+     current_experiment_id = experiment_data['experimentId'];
+     experiment_module._runExperiment(experimentSpecification);
+     }
+     else
+     {
+     defines.verbose("Experiment " + experiment_data['experimentId'] + " failed.");
+     //database.shiftQueue(function(resultsDictionary){return function(){
+     //	queue.pollQueue();
+     //}}({error:"Experiment failed: invalid specification"}));
+     }
+     }
+     }(experiment_data));
+     */
 }

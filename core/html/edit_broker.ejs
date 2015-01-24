@@ -158,7 +158,7 @@ else
                 <h4>API (<a href="">Select all</a>)</h4>
                 <%
                 //Get a list of api functions from the js_specifications folder.
-                for (machine in js_engine.actions()) {
+                        for (machine in js_engine.actions()) {
                 %><h5><%= machine %></h5><%
                     var actions = Object.keys(js_engine.actions()[machine]);
                     var i;

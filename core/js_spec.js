@@ -113,7 +113,7 @@ js_spec_module.setupExpress = function (app) {
             js_spec_module._log('specification ' + plugin_name + " loaded");
         }
     }
-	defines.prettyLine("js.specification", "loaded");
+    defines.prettyLine("js.specification", "loaded");
 }
 
 
@@ -196,19 +196,19 @@ js_spec_module._javaScriptFromJSONSpecification = function (experiment, experime
     if (experiment in js_spec_module._plugins) {
         var plugin = js_spec_module._plugins[experiment];
         try {
-			defines.verbose(JSON.stringify(experimentSpecification));
+            defines.verbose(JSON.stringify(experimentSpecification));
             plugin.javaScriptFromJSONSpecification(experimentSpecification, callback);
         }
         catch (err) {
-			defines.verbose(err.toString());
+            defines.verbose(err.toString());
             return callback({accepted: false, errorMessage: err.toString()});
         }
     }
     else
-	{
-		defines.verbose("invalid plugin");
+    {
+        defines.verbose("invalid plugin");
         return callback({accepted: false, errorMessage: experiment + " is an invalid plugin"});
-	}
+    }
 }
 
 js_spec_module.javaScriptFromSpecification = function (format, experiment, experimentSpecification, callback) {
@@ -229,7 +229,7 @@ js_spec_module.javaScriptFromSpecification = function (format, experiment, exper
 
             break;
         case "json":
-			defines.verbose("VALIDATING JSON EXPERIMENT");
+            defines.verbose("VALIDATING JSON EXPERIMENT");
             js_spec_module._javaScriptFromJSONSpecification(experiment, experimentSpecification, callback);
             break;
         default:

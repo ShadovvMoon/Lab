@@ -4,14 +4,14 @@
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- 
+
  * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- 
+
  * Redistributions in binary form must reproduce the above copyright notice, this
  * list of conditions and the following disclaimer in the documentation and/or
  * other materials provided with the distribution.
- 
+
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -82,20 +82,20 @@ js_engine_module.setupExpress = function (app)
     js_engine_module.executionTime = defines.executionTime; //60 seconds
     js_engine_module.strictExecution = defines.strictExecution;
 
-	if (defines.sandboxes > 1)
-	{
-	    js_engine_module.usePools = true;
-	    js_engine_module.poolCount = defines.sandboxes;
-	}
-	else
-	{
-		js_engine_module.usePools = false;
-	}
+    if (defines.sandboxes > 1)
+    {
+        js_engine_module.usePools = true;
+        js_engine_module.poolCount = defines.sandboxes;
+    }
+    else
+    {
+        js_engine_module.usePools = false;
+    }
 
     js_engine_module.scriptOptions = {timeout: js_engine_module.executionTime,
-										  api:path.join(__dirname, 'js_api.js'),
-								useStrictMode: defines.strictEngine,
-								memoryLimitMB: defines.memoryLimitMB};
+        api:path.join(__dirname, 'js_api.js'),
+        useStrictMode: defines.strictEngine,
+        memoryLimitMB: defines.memoryLimitMB};
     js_engine_module._sandboxes = {};
 
     if (js_engine_module.usePools)
@@ -103,7 +103,7 @@ js_engine_module.setupExpress = function (app)
     else
         js_engine_module.sandbox_engine = new SandCastle(js_engine_module.scriptOptions);
 
-	defines.prettyLine("js.engine", "loaded");
+    defines.prettyLine("js.engine", "loaded");
 };
 
 
@@ -136,8 +136,8 @@ js_engine_module.killScript = function(script, message)
         if (typeof sandbox_dictionary.finished == true) return;
         sandbox_dictionary.finished = true;
         sandbox_dictionary.errors = true;
-		var short_id = script.slice(0,4);
-		defines.prettyLine("   js.engine", "killed."+ short_id);
+        var short_id = script.slice(0,4);
+        defines.prettyLine("   js.engine", "killed."+ short_id);
         message = (typeof message !== 'undefined') ? message : "";
         js_engine_module._log("force killed " + script + ": " + message);
         sandbox_dictionary.sandbox.emit("exit");
@@ -160,31 +160,31 @@ js_engine_module._scriptHeader = function(sandbox_id)
         //Defined in the shovel
         var URL = "http://localhost:" + lab_port + "/javascript-validator";
         var opts = {
-			arguments:args,
-			action:act,
-			sandbox_id: sandbox_id
-		};
+            arguments:args,
+            action:act,
+            sandbox_id: sandbox_id
+        };
         if (typeof callback === 'undefined') //Sync
         {
-			/*
-            var body = sendAction(URL, JSON.stringify(opts), undefined);
-            var returned_value = JSON.parse(body);
-            return returned_value['json'];
-			*/
-			/*
-			receivedSync = false;
-			bodySync = undefined;
-			sendAction(URL, JSON.stringify(opts), function(responseText, statusText){
-				receivedSync = true;
-				bodySync = responseText;
-			});
-			while (!received)
-			{
-				//Blocked.
-			}
-            var returned_value = JSON.parse(bodySync);
-            return returned_value['json'];
-			*/
+            /*
+             var body = sendAction(URL, JSON.stringify(opts), undefined);
+             var returned_value = JSON.parse(body);
+             return returned_value['json'];
+             */
+            /*
+             receivedSync = false;
+             bodySync = undefined;
+             sendAction(URL, JSON.stringify(opts), function(responseText, statusText){
+             receivedSync = true;
+             bodySync = responseText;
+             });
+             while (!received)
+             {
+             //Blocked.
+             }
+             var returned_value = JSON.parse(bodySync);
+             return returned_value['json'];
+             */
         }
         else //ASync
         {
@@ -263,40 +263,40 @@ js_engine_module.increaseValidateExperimentTime = function(script, time)
 
 jsEngineValidations = 0;
 js_engine_module.pollVQueue = function() {
-	if (jsEngineValidations < defines.parallelValidation)
-	{
-		if (queue.numberOfVElements()>0)
-		{
-			defines.prettyLine("vqueue", "available");
-			var vobject = queue.nextVElement();
+    if (jsEngineValidations < defines.parallelValidation)
+    {
+        if (queue.numberOfVElements()>0)
+        {
+            defines.prettyLine("vqueue", "available");
+            var vobject = queue.nextVElement();
 
-			jsEngineValidations++;
-			js_engine_module.executeScript(vobject.script, true, vobject.complete);
-		}
-		else
-		{
-			defines.prettyLine("vqueue", "empty");
-		}
-	}
-	else
-	{
-		defines.prettyLine("vqueue", "busy " + queue.numberOfVElements());
-	}
+            jsEngineValidations++;
+            js_engine_module.executeScript(vobject.script, true, vobject.complete);
+        }
+        else
+        {
+            defines.prettyLine("vqueue", "empty");
+        }
+    }
+    else
+    {
+        defines.prettyLine("vqueue", "busy " + queue.numberOfVElements());
+    }
 }
 
 js_engine_module.validateScript = function(script, callback)
 {
-	//Put the validation object in the new queue
-	queue.addVElement({script: script, complete: function(callback){
-		return function(vReport)
-		{
-			callback(vReport);
+    //Put the validation object in the new queue
+    queue.addVElement({script: script, complete: function(callback){
+        return function(vReport)
+        {
+            callback(vReport);
 
-			jsEngineValidations--;
-			js_engine_module.pollVQueue();
-		};
-	}(callback)});
-	js_engine_module.pollVQueue();
+            jsEngineValidations--;
+            js_engine_module.pollVQueue();
+        };
+    }(callback)});
+    js_engine_module.pollVQueue();
 }
 
 js_engine_module.executeScript = function(script, validate, callback)
@@ -309,12 +309,12 @@ js_engine_module.executeScript = function(script, validate, callback)
     var sandbox_id = defines.randomString(36, 16);
     while (sandbox_id in js_engine_module._sandboxes)
         sandbox_id = defines.randomString(36, 16);
-	
-	var short_id = sandbox_id.slice(0,4);
-	if (validate)
-		defines.prettyLine("validating", short_id);
-	else
-		defines.prettyLine("executing", short_id);
+
+    var short_id = sandbox_id.slice(0,4);
+    if (validate)
+        defines.prettyLine("validating", short_id);
+    else
+        defines.prettyLine("executing", short_id);
 
     //var script_timeout = (validate) ? js_engine_module.validationTime : js_engine_module.executionTime;
     script = "exports.main = function(){" + script + " };";
@@ -326,7 +326,7 @@ js_engine_module.executeScript = function(script, validate, callback)
     else
         script = js_engine_module.sandbox_engine.createScript(script);
 
- 	js_engine_module._log("script created");
+    js_engine_module._log("script created");
     js_engine_module._sandboxes[sandbox_id] = {sandbox: script,
         validate: validate,
         callback:callback,
@@ -334,23 +334,23 @@ js_engine_module.executeScript = function(script, validate, callback)
         finished: false,
         errors: false};
 
-	var executionTimeout = setTimeout(function(sandbox_id){return function(){
-		//Make sure the experiment has executed by this time.
-		if (sandbox_id in js_engine_module._sandboxes)
-		{
-			defines.prettyLine("   js.engine", "exec timeout."+ short_id);
-			js_engine_module.killScript(sandbox_id);
-		}
-		else
-		{
-			defines.verbose("script missing");
-		}
-	}}(sandbox_id), (validate ? defines.validationTime : defines.executionTime));
+    var executionTimeout = setTimeout(function(sandbox_id){return function(){
+        //Make sure the experiment has executed by this time.
+        if (sandbox_id in js_engine_module._sandboxes)
+        {
+            defines.prettyLine("   js.engine", "exec timeout."+ short_id);
+            js_engine_module.killScript(sandbox_id);
+        }
+        else
+        {
+            defines.verbose("script missing");
+        }
+    }}(sandbox_id), (validate ? defines.validationTime : defines.executionTime));
 
-   
+
     js_engine_module._log("script registered");
     script.on('timeout', function(sandbox_id) { return function() {
-		defines.verbose("timeout");
+        defines.verbose("timeout");
 
         var sandbox_dictionary = js_engine_module._sandboxes[sandbox_id];
         if (typeof sandbox_dictionary === 'undefined')
@@ -359,44 +359,44 @@ js_engine_module.executeScript = function(script, validate, callback)
         sandbox_dictionary.finished = true;
         sandbox_dictionary.errors = true;
 
-		defines.prettyLine("   js.engine", "engine timeout."+ short_id );
+        defines.prettyLine("   js.engine", "engine timeout."+ short_id );
         js_engine_module._log(sandbox_id + " timed out");
         sandbox_dictionary.sandbox.emit("exit");
 
-		if (typeof sandbox_dictionary.callback !== 'undefined')
-       		sandbox_dictionary.callback({accepted: false, errorMessage: "sandbox timeout"});
+        if (typeof sandbox_dictionary.callback !== 'undefined')
+            sandbox_dictionary.callback({accepted: false, errorMessage: "sandbox timeout"});
 
     };}(sandbox_id));
 
     script.on('exit', function(sandcastle, sandbox_id) {
         return function(err, result) {
-			defines.verbose("script exited");
-			defines.prettyLine("sandbox", "exiting");
-            
-            if (!(sandbox_id in js_engine_module._sandboxes))
-			{
-				defines.prettyLine("sandbox", "missing");
-				defines.verbose("missing sandbox");
-                return;
-			}
+            defines.verbose("script exited");
+            defines.prettyLine("sandbox", "exiting");
 
-			var sandbox_dictionary = js_engine_module._sandboxes[sandbox_id];
+            if (!(sandbox_id in js_engine_module._sandboxes))
+            {
+                defines.prettyLine("sandbox", "missing");
+                defines.verbose("missing sandbox");
+                return;
+            }
+
+            var sandbox_dictionary = js_engine_module._sandboxes[sandbox_id];
             if (typeof sandbox_dictionary.finished == true)
-			{
-				defines.prettyLine("sandbox", "finished");
-				defines.verbose("sandbox finished");
-				return;
-			}
+            {
+                defines.prettyLine("sandbox", "finished");
+                defines.verbose("sandbox finished");
+                return;
+            }
             sandbox_dictionary.finished = true;
 
             if (err || sandbox_dictionary.errors)
             {
-				defines.verbose("finished with errors");
+                defines.verbose("finished with errors");
                 if (err) {
                     defines.verbose(err.message);
                     defines.verbose(err.stack);
 
-					defines.prettyLine("   js.engine", "syntax."+ short_id);
+                    defines.prettyLine("   js.engine", "syntax."+ short_id);
                 }
 
                 if (js_engine_module.isValidating(sandbox_id))
@@ -406,7 +406,7 @@ js_engine_module.executeScript = function(script, validate, callback)
                     sandbox_dictionary.callback({accepted: false, errorMessage: "syntax error"})
             }
             else {
-				defines.verbose("finished without errors");
+                defines.verbose("finished without errors");
                 if (js_engine_module.isValidating(sandbox_id))
                     js_engine_module._log("validation successful");
 
@@ -418,7 +418,7 @@ js_engine_module.executeScript = function(script, validate, callback)
                 }
             }
 
-			defines.prettyLine("sandbox", "release");
+            defines.prettyLine("sandbox", "release");
             delete js_engine_module._sandboxes[sandbox_id];
         };
     }(script, sandbox_id)); //Wrap the sandcastle

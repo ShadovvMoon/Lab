@@ -5,14 +5,14 @@
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- 
+
  * Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- 
+
  * Redistributions in binary form must reproduce the above copyright notice, this
  * list of conditions and the following disclaimer in the documentation and/or
  * other materials provided with the distribution.
- 
+
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,7 +38,7 @@ defines.executionTime = 60000;
 defines.idle_status = 0;
 defines.running_status = 1;
 defines.starting_status = 2;
-defines.finishing_status = 3; 
+defines.finishing_status = 3;
 
 //JS Engine
 defines.strictExecution = true;
@@ -65,28 +65,28 @@ defines.kInvalidExperiment = 6
 defines._developer_mode = false;
 defines.debug = function(message)
 {
-	if (defines._developer_mode)
-		console.log(message);
+    if (defines._developer_mode)
+        console.log(message);
 }
 
 //Pretty printing
 defines.verbose = function(message)
 {
-	if (defines.enableVerbose)
-		console.log(message);
+    if (defines.enableVerbose)
+        console.log(message);
 };
 
 
 defines.lineWidth = 40;
 defines.prettyConsole = function(message) {
-	if (!defines.enableVerbose)
-   	 	process.stdout.write(message);
+    if (!defines.enableVerbose)
+        process.stdout.write(message);
 };
 defines.prettyLine = function(start, end) {
-	defines.prettyConsole(start);
-	defines.printDots(defines.lineWidth-start.length-end.length);
-	defines.prettyConsole(end);
-	defines.prettyConsole('\n');
+    defines.prettyConsole(start);
+    defines.printDots(defines.lineWidth-start.length-end.length);
+    defines.prettyConsole(end);
+    defines.prettyConsole('\n');
 };
 defines.printSeparator = function()
 {
@@ -104,12 +104,12 @@ defines.printDots = function(dotNum)
     }
 };
 defines.clearConsole = function() {
-	if (typeof process.stdout.getWindowSize !== 'undefined') {
-    	var lines = process.stdout.getWindowSize()[1];
-    	for (var i = 0; i < lines; i++) {
-      	  defines.prettyConsole('\r\n');
-    	}
-	}
+    if (typeof process.stdout.getWindowSize !== 'undefined') {
+        var lines = process.stdout.getWindowSize()[1];
+        for (var i = 0; i < lines; i++) {
+            defines.prettyConsole('\r\n');
+        }
+    }
 }
 
 

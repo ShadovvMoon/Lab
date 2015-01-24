@@ -1,7 +1,7 @@
 XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 exports.api = {
 
-	//Async ONLY
+    //Async ONLY
     sendAction: function(location, body, callback)
     {
         var xhr = new XMLHttpRequest();
@@ -22,11 +22,11 @@ exports.api = {
         xhr.send(body);
         //return xhr.responseText;
     },
-	/*
-	do NOT enable this
-	debug: function(message)
- 	{
-   		console.log(message);
- 	}
-	*/	
+    /*
+     do NOT enable this
+     debug: function(message)
+     {
+     console.log(message);
+     }
+     */
 }
