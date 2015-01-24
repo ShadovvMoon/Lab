@@ -34,11 +34,12 @@ var experiment  = require('./experiment');
 var jsengine    = require('./js_engine');
 var jsvalidator = require('./js_validator');
 var jsspec      = require('./js_spec');
+var jsconsole   = require('./console');
 calendar = require('./calendar')
 var portscanner = require('portscanner');
 var readline = require('readline');
 
-var rl = readline.createInterface({
+rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
@@ -66,7 +67,7 @@ core.createLab = (function (app,callback)
             console.log("Lab Server");
             console.log("Version: 1.0.4");
             console.log("  Build: 1");
-            console.log("   Date: 23/1/2015");
+            console.log("   Date: 24/1/2015");
             defines.printSeparator();
         }
 
@@ -171,20 +172,29 @@ core.createLab = (function (app,callback)
                 jsengine.setupExpress(app);
                 jsengine.loadActions(function(err) {
                     if (err) {
-                        return defines.prettyConsole("Error: " + err);
+                        return defines.prettyConsole("JSEngine error: " + err);
                     }
-                    jsvalidator.setupExpress(app);
-                    jsspec.setupExpress(app);
-                    queue.startQueue(function()
-                    {
-                        //Create the html server
-                        require("http").createServer(app).listen(app.get('port'), function()
-                        {
-                            defines.verbose("Running on port " + app.get('port'));
-                            defines.verbose("");
+                    jsconsole.setup(function(err) {
+                        if (err) {
+                            return defines.prettyConsole("JSConsole error: " + err);
+                        }
 
-                            defines.prettyConsole("\r\nRunning on port " + app.get('port') + "\r\n");
-                            defines.printSeparator();
+                        jsvalidator.setupExpress(app);
+                        jsspec.setupExpress(app);
+                        queue.startQueue(function()
+                        {
+                            //Create the html server
+                            require("http").createServer(app).listen(app.get('port'), function()
+                            {
+                                defines.verbose("Running on port " + app.get('port'));
+                                defines.verbose("");
+
+                                defines.prettyConsole("\r\nRunning on port " + app.get('port') + "\r\n");
+                                defines.printSeparator();
+
+                                // Start the console
+                                jsconsole.run();
+                            });
                         });
                     });
                 });
