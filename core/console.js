@@ -1,5 +1,11 @@
+colors = require('colors/safe');
+
 lab_console = module.exports;
 lab_console.plugins = {};
+
+// Exit statuses
+EXIT_SUCCESS=0
+EXIT_FAILURE=1
 
 /**
  *
@@ -50,11 +56,13 @@ function load_plugins(callback) {
  */
 lab_console.setup = function(callback) {
     load_plugins(function(err) {
-        defines.prettyLine("console", "loaded");
+        defines.prettyLine("console", defines.loaded);
         callback(err);
     });
 }
 
 lab_console.run = function() {
-    lab_console.plugins['shell'].run([], lab_console.run);
+    lab_console.plugins['shell'].run([], function(exit_status) {
+        lab_console.run();
+    });
 }

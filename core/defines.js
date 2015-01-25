@@ -34,6 +34,11 @@ defines.executionTime = 60000;
 //------------------------------
 //Do not modify below this line.
 
+// Printing
+colors = require("colors");
+defines.loaded = colors.green("loaded");
+defines.failed = colors.red("failed");
+
 //States
 defines.idle_status = 0;
 defines.running_status = 1;
@@ -82,9 +87,21 @@ defines.prettyConsole = function(message) {
     if (!defines.enableVerbose)
         process.stdout.write(message);
 };
+defines.strlen = function(str) {
+	var len = 0;
+	for (var i = 0; i < str.length; i++) {
+		var code = str.charCodeAt(i);
+		if (code == 27) { // ESC
+			i += 4;
+			continue;
+		}
+		len++;
+	}
+	return len;
+}
 defines.prettyLine = function(start, end) {
     defines.prettyConsole(start);
-    defines.printDots(defines.lineWidth-start.length-end.length);
+    defines.printDots(defines.lineWidth-defines.strlen(start)-defines.strlen(end));
     defines.prettyConsole(end);
     defines.prettyConsole('\n');
 };

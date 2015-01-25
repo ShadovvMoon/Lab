@@ -573,5 +573,5 @@ broker_module.setupExpress = function (app)
         broker_module.handleRequest(client);
     });
     broker_module.initBrokers();
-    defines.prettyLine("brokers", "loaded");
+    defines.prettyLine("brokers", defines.loaded);
 };

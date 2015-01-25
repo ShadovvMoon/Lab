@@ -168,5 +168,5 @@ jsvalidator_module.setupExpress = function(app)
     });
 
     jsvalidator_module._log("running");
-    defines.prettyLine("js.validator", "loaded");
+    defines.prettyLine("js.validator", defines.loaded);
 }

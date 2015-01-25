@@ -60,7 +60,7 @@ js_engine_module.loadActions = function(callback) {
 
                 // Load the actions from the file
                 var actions = require(path.join(js_engine_module.apiPath(), file)).actions;
-                defines.prettyLine("   " + file, "loaded");
+                defines.prettyLine("   " + file, defines.loaded);
 
                 // Print out each action
                 for (key in actions) {
@@ -103,7 +103,7 @@ js_engine_module.setupExpress = function (app)
     else
         js_engine_module.sandbox_engine = new SandCastle(js_engine_module.scriptOptions);
 
-    defines.prettyLine("js.engine", "loaded");
+    defines.prettyLine("js.engine", defines.loaded);
 };
 
 

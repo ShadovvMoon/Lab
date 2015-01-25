@@ -110,10 +110,10 @@ js_spec_module.setupExpress = function (app) {
             var plugin_name = files[i].slice(0, -3);
             var definition = require(path.join(js_spec_module.specificationPath(), files[i]));
             js_spec_module._plugins[plugin_name] = definition;
-            js_spec_module._log('specification ' + plugin_name + " loaded");
+            js_spec_module._log('specification ' + plugin_name + " " + defines.loaded);
         }
     }
-    defines.prettyLine("js.specification", "loaded");
+    defines.prettyLine("js.specification", defines.loaded);
 }
 
 

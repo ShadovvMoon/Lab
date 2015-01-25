@@ -15,7 +15,8 @@
     "xml2js":"*",
     "sandcastle":"*",
     "portscanner":"*",
-    "readline":"*"
+    "readline":"*",
+    "colors":"*"
    },
   "author": {
     "name": "Samuel Colbran",

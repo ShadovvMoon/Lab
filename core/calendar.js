@@ -55,7 +55,7 @@ calendar_module.updateCalendar = function(calendar) {
 }
 calendar_module.setupExpress = function (app) {
     calendar_module.flushCalendar();
-    defines.prettyLine("calendar", "loaded");
+    defines.prettyLine("calendar", defines.loaded);
 }
 
 calendar_module.hasAccess = function(broker, estRuntime) {

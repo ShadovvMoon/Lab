@@ -263,7 +263,7 @@ queue_module.pollQueue = function()
 queue_module.startQueue = function(callback)
 {
     queue_module._loadQueue();
-    defines.prettyLine("queue", "loaded");
+    defines.prettyLine("queue", defines.loaded);
     defines.prettyConsole("\r\nStarting experiment queue\r\n");
 
     //Immediately poll the queue

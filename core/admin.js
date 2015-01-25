@@ -463,5 +463,5 @@ root_module.setupExpress = function (app)
             }
         }
     });
-    defines.prettyLine("admin.gui", "loaded");
+    defines.prettyLine("admin.gui", defines.loaded);
 };

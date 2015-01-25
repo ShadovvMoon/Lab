@@ -44,7 +44,7 @@ var status_code = defines.idle_status;
  */
 experiment_module.setupExpress = function(app)
 {
-    defines.prettyLine("experiment", "loaded");
+    defines.prettyLine("experiment", defines.loaded);
 }
 
 /**
