@@ -303,7 +303,7 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
             // Find an appropriate handler
             if (action in broker_module._plugins) {
                 var plugin = broker_module._plugins[action];
-                return plugin.receiveData(broker, json);
+                return plugin.receiveData(this, json);
             } else {
                 return this.sendError("The '" + action + "' action is not supported by this lab server");
             }
