@@ -328,6 +328,7 @@ experiment_module._finishExperiment = function(results)
         defines.prettyLine("notifying broker", experimentId);
     });
     defines.prettyLine("continuing", "");
+
     //Remove the experiment from the queue
     queue.removeExperiment(current_experiment);
     status_code = defines.idle_status;

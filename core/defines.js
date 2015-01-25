@@ -34,6 +34,12 @@ defines.executionTime = 60000;
 //------------------------------
 //Do not modify below this line.
 
+// Version
+defines.version = "1.0.4";
+defines.version_description = "";
+defines.build = 3;
+defines.build_date = "25/1/2015";
+
 // Printing
 colors = require("colors");
 defines.loaded = colors.green("loaded");

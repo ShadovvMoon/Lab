@@ -65,9 +65,9 @@ core.createLab = (function (app,callback)
         function startMessage() {
             console.log("");
             console.log("Lab Server");
-            console.log("Version: " + colors.yellow("1.0.4"));
-            console.log("  Build: " + colors.yellow("1"));
-            console.log("   Date: " + colors.yellow("24/1/2015"));
+            console.log("Version: " + colors.yellow(defines.version));
+            console.log("  Build: " + colors.yellow(defines.build));
+            console.log("   Date: " + colors.yellow(defines.build_date));
             defines.printSeparator();
         }
 
@@ -166,38 +166,45 @@ core.createLab = (function (app,callback)
 
                 defines.prettyConsole("Loading modules\r\n");
                 calendar.setupExpress(app);
-                broker.setupExpress(app);
-                admin.setupExpress(app);
-                experiment.setupExpress(app);
-                jsengine.setupExpress(app);
-                jsengine.loadActions(function(err) {
+                broker.loadPlugins(function(err) {
                     if (err) {
-                        return defines.prettyConsole("JSEngine error: " + err);
+                        defines.prettyConsole(""+err+"\n");
                     }
-                    jsconsole.setup(function(err) {
+
+                    broker.setupExpress(app);
+                    admin.setupExpress(app);
+                    experiment.setupExpress(app);
+                    jsengine.setupExpress(app);
+                    jsengine.loadActions(function(err) {
                         if (err) {
-                            return defines.prettyConsole("JSConsole error: " + err);
+                            return defines.prettyConsole("JSEngine error: " + err);
                         }
+                        jsconsole.setup(function(err) {
+                            if (err) {
+                                return defines.prettyConsole("JSConsole error: " + err);
+                            }
 
-                        jsvalidator.setupExpress(app);
-                        jsspec.setupExpress(app);
-                        queue.startQueue(function()
-                        {
-                            //Create the html server
-                            require("http").createServer(app).listen(app.get('port'), function()
+                            jsvalidator.setupExpress(app);
+                            jsspec.setupExpress(app);
+                            queue.startQueue(function()
                             {
-                                defines.verbose("Running on port " + app.get('port'));
-                                defines.verbose("");
+                                //Create the html server
+                                require("http").createServer(app).listen(app.get('port'), function()
+                                {
+                                    defines.verbose("Running on port " + app.get('port'));
+                                    defines.verbose("");
 
-                                defines.prettyConsole("\r\nRunning on port " + app.get('port') + "\r\n");
-                                defines.printSeparator();
+                                    defines.prettyConsole("\r\nRunning on port " + app.get('port') + "\r\n");
+                                    defines.printSeparator();
 
-                                // Start the console
-                                jsconsole.run();
+                                    // Start the console
+                                    jsconsole.run();
+                                });
                             });
                         });
                     });
                 });
+
             };
             if (setupLab()) {
                 startLab();

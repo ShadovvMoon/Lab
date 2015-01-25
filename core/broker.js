@@ -300,143 +300,11 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
             defines.debug("Received data from broker ("+this._guid+")");
             defines.debug(JSON.stringify(json));
 
-            if (json.action == "registerBroker") {
-                this.update(this._guid, this._name, this._key, json.host, json.port, this._permissions);
-
-                //TODO: Async this call
-                var serverGuid = database.valueForKey("settings", "guid", undefined);
-                return this.sendData({labGUID: serverGuid});
-            }
-            else if (action == 'getEffectiveQueueLength')
-            {
-                //Two params for this action. We will ignore them for now.
-                //var userGroup = params['userGroup'];
-                //var priorityHint = params['priorityHint'];
-
-                return this.sendData(queue.getEffectiveQueueLength());
-            }
-            else if (action == 'getLabConfiguration')
-            {
-                var configuration = experiment.getLabConfiguration();
-                return this.sendData({labConfiguration: configuration});
-            }
-            else if (action == 'getLabStatus')
-            {
-                var lab_status = experiment.getStatus();
-                return this.sendData({online:true, labStatusMessage: lab_status});
-            }
-            else if (action == 'cancel')
-            {
-                return this.sendError("The cancel action is not supported by this lab server");
-            }
-            else if (action == 'getExperimentStatus')
-            {
-                var experimentID     = params['experimentID'];
-                var experimentStatus = experiment.experimentStatus(experimentID);
-                return this.sendData({statusCode: experimentStatus});
-            }
-            else if (action == 'retrieveResult')
-            {
-                var experimentID     = params['experimentID'];
-                var experimentStatus = experiment.experimentStatus(experimentID);
-
-                var completed_experiments = database.getKeys("results");
-                if (completed_experiments.indexOf(''+experimentID) != -1)
-                {
-                    //Experiment has been completed and the results are available.
-                    //defines.kFinished
-                    var results = database.valueForKey("results", experimentID, undefined);
-                    return this.sendData({statusCode: experimentStatus,
-                        experimentResults: results});
-                }
-                else
-                {
-                    return this.sendData({statusCode: experimentStatus});
-                }
-            }
-            else if (action == 'validate')
-            {
-                return this.sendError("The validate action is not supported by this lab server");
-            }
-            else if (action == 'submit')
-            {
-                var experimentID            = params['experimentID'];
-                var experimentSpecification = params['experimentSpecification'];
-                var specificationFormat		= params['specificationFormat'];
-                var specificationID			= params['specificationID'];
-                var userGroup               = params['userGroup'];
-                var priorityHint            = params['priorityHint'];
-
-                console.log(experimentSpecification);
-                console.log(specificationID);
-                console.log(params);
-                //Permissions check
-                if (!this._permissions.batched)
-                {
-                    return this.sendError("You do not have permission to submit batched lab experiments");
-                }
-                else if (this._permissions.specifications.indexOf(specificationID) == -1)
-                {
-                    return this.sendError("You do not have permission to use the '"+ specificationID +"' specification.");
-                }
-                else if (!this._permissions.js_engine && specificationFormat == "js")
-                {
-                    return this.sendError("You do not have permission to use the Javascript Engine.");
-                }
-
-                //Experiment evaluation engine
-                var submission = function (client, broker) {
-                    return function (options) {
-                        if (options.accepted) {
-                            jsengine.submitScript(broker,
-                                options.script,
-                                function (clientReturn)
-                                {
-                                    broker.sendData(clientReturn);
-                                    queue.pollQueue();
-                                });
-                        }
-                    };
-                }(client, this);
-
-                defines.verbose("Submitted experiment " + specificationFormat);
-                if (specificationFormat == "xml" || specificationFormat == "json" || typeof specificationFormat == 'undefined')
-                {
-                    specificationFormat = (specificationFormat == 'json') ? 'json' : 'xml';
-                    /*var useJSEngine = false; //NO reason to use the JS engine!
-                     if (useJSEngine) {
-                     defines.verbose("Creating specification with JSSpec");
-                     jsspec.javaScriptFromSpecification(specificationFormat, specificationID,
-                     experimentSpecification, submission);
-                     }
-                     else {*/
-                    jsspec.submitScript(this, specificationFormat,
-                        specificationID, experimentSpecification,
-                        function (client, broker) {
-                            return function (clientReturn) {
-                                broker.sendData(clientReturn);
-                                queue.pollQueue();
-                            };
-                        }(client, this));
-                    //}
-                }
-                else if (specificationFormat == "js")
-                {
-                    submission({accepted: true, script: experimentSpecification});
-                }
-                else
-                {
-                    return this.sendError("The specification format '"+ specificationFormat +"' does not exist.");
-                }
-            }
-            else if (action == 'schedule')
-            {
-                var reservationType = params['reservationType'];
-                var startDate = params['startDate'];
-                var endDate   = params['endDate'];
-            }
-            else
-            {
+            // Find an appropriate handler
+            if (action in broker_module._plugins) {
+                var plugin = broker_module._plugins[action];
+                return plugin.receiveData(broker, json);
+            } else {
                 return this.sendError("The '" + action + "' action is not supported by this lab server");
             }
         };
@@ -450,6 +318,14 @@ broker_module.createBroker = function (guid, name, key, host, port, permissions)
     //Return the new broker
     return new_broker;
 };
+
+/*var useJSEngine = false; //NO reason to use the JS engine!
+ if (useJSEngine) {
+ defines.verbose("Creating specification with JSSpec");
+ jsspec.javaScriptFromSpecification(specificationFormat, specificationID,
+ experimentSpecification, submission);
+ }
+ else {*/
 
 /**
  * Returns the broker object with the specified guid
@@ -559,6 +435,45 @@ broker_module.handleRequest = function (client) {
 
 };
 
+function pluginPath() {
+    return path.join(process.cwd(), "core/broker");
+}
+
+broker_module._plugins = {};
+broker_module.loadPlugins = function(callback) {
+    defines.prettyLine("broker.plugins", defines.loaded);
+    fs.readdir(pluginPath(), function(err, files) {
+        if (err) {
+            return callback(err);
+        }
+
+        defines.asyncLoop(files.length, function(loop) {
+            try {
+                var file = path.join(pluginPath(), files[loop.iteration()]);
+                if (path.extname(file) == ".js") {
+
+                    // Load the plugin from the file
+                    var actions = require(file);
+
+                    // Extract the name
+                    var name = path.basename(file);
+                    name = name.slice(0, name.indexOf(path.extname(name)));
+                    defines.prettyLine("   " + name, defines.loaded);
+
+                    // Store the plugin
+                    broker_module._plugins[name] = actions;
+                }
+                loop.next();
+            } catch (e) {
+                callback(e);
+            }
+        }, function() {
+            callback();
+        });
+    });
+};
+
+
 /**
  * Initialises the module with the express application
  * @param app - the express app.
@@ -572,6 +487,8 @@ broker_module.setupExpress = function (app)
         var client = {request:req,response:res,json:req.body,type:'json'};
         broker_module.handleRequest(client);
     });
+
+    // Initialise the brokers
     broker_module.initBrokers();
     defines.prettyLine("brokers", defines.loaded);
 };
