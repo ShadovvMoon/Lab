@@ -8,14 +8,19 @@ function usage() {
 module.exports.run = function(args, callback) {
 
     // Are the arguments valid?
-    if (args.length < 3) {
+    if (args.length < 2) {
         usage();
         return callback(EXIT_FAILURE);
     }
 
+	var inputs = undefined;
+	if (args.length > 2) {
+		inputs = JSON.parse(args.slice(2));
+	}
+
     try {
         js_validator.runAction(args[1],
-            JSON.parse(args.slice(2)),
+           inputs,
             false,
             function (json) {
                 if (!json.success) {
