@@ -18,7 +18,9 @@ module.exports.run = function(args, callback) {
 	
 }
 
+/*
 module.exports.help = function() {
     defines.prettyConsole("   This command is used to run a specification\n");
     usage();
 }
+*/

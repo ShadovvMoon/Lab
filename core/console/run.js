@@ -19,8 +19,8 @@ module.exports.run = function(args, callback) {
             false,
             function (json) {
                 if (!json.success) {
-					defines.prettyConsole(colors.red("Action is invalid\n"));
-                    defines.prettyConsole(json.error);
+					defines.prettyConsole(colors.red("Action is invalid\n") +
+                        json.error + "\n");
 					return callback(EXIT_FAILURE);
                 } 
 
