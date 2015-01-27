@@ -204,8 +204,13 @@ js_spec_module.run1_0_4Specification = function(plugin, validate, experimentSpec
     }
 
     plugin.run(equipment, experimentSpecification, function (results) {
-        defines.prettyConsole(colors.green("Experiment successful\n"));
-        callback({success:true, time: equipment.time}, results);
+        if (validate) {
+            defines.prettyConsole(colors.green("Validation successful\n"));
+        } else {
+            defines.prettyConsole(colors.green("Execution successful\n"));
+        }
+
+        callback({success: true, time: equipment.time}, results);
     }, validate);
 }
 
@@ -240,17 +245,17 @@ js_spec_module._executeJSONSpecification = function (experiment, validate, exper
             defines.prettyConsole("executing " + experiment + "\n");
         }
 
-        //try {
-        if (typeof plugin.run !== 'undefined' && typeof plugin.timeout !== 'undefined') { // 1.0.4
-            js_spec_module.run1_0_4Specification(plugin, validate, experimentSpecification, callback);
+        try {
+            if (typeof plugin.run !== 'undefined' && typeof plugin.timeout !== 'undefined') { // 1.0.4
+                js_spec_module.run1_0_4Specification(plugin, validate, experimentSpecification, callback);
+            }
+            else if (typeof plugin.executeJSONSpecification !== 'undefined') { // 1.0.3
+                js_spec_module.run1_0_3Specification(plugin, validate, experimentSpecification, callback);
+            }
         }
-        else if (typeof plugin.executeJSONSpecification !== 'undefined') { // 1.0.3
-            js_spec_module.run1_0_3Specification(plugin, validate, experimentSpecification, callback);
+        catch (err) {
+            return callback({accepted: false, errorMessage: err.toString()});
         }
-        //}
-        //catch (err) {
-        //    return callback({accepted: false, errorMessage: err.toString()});
-        //}
     }
     else
         return callback({accepted: false, errorMessage: experiment + " is an invalid plugin"});
