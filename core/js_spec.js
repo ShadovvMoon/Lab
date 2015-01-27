@@ -33,6 +33,7 @@ var defines = require('./defines');
 var fs = require('fs');
 var parseString = require('xml2js').parseString;
 
+var js_validator = require('./js_validator');
 var js_spec_module = module.exports;
 
 /**
@@ -92,11 +93,19 @@ js_spec_module._xmlToJS = function (str, callback) {
     }
 };
 
+/**
+ *
+ * @param message
+ * @private
+ */
 js_spec_module._log = function (message) {
     defines.verbose("JSSpec \t- " + message);
 }
 
-
+/**
+ *
+ * @returns {*}
+ */
 js_spec_module.specificationPath = function() {
     return path.join(process.cwd(), "api/specifications");
 }
@@ -116,22 +125,146 @@ js_spec_module.setupExpress = function (app) {
     defines.prettyLine("js.specification", defines.loaded);
 }
 
+// 1.0.4 specification format
+/**
+ *
+ * @param plugin
+ * @param validate
+ * @param experimentSpecification
+ * @param callback
+ */
+js_spec_module.run1_0_4Specification = function(plugin, validate, experimentSpecification, callback) {
+    var equipment = undefined;
+    if (validate) {
 
-//Spec stuff
+        /**
+         * Validation equipment object
+         */
+        equipment = new function() {
+            this.time = 0.0;
+            this.run = function(action, args, success) {
+                if (typeof success === 'undefined') {
+                    success = args;
+                    args = {};
+                }
+
+                js_validator.runAction(action, args, true,
+                    function (json) {
+                        if (json.success) {
+                            equipment.time += json.options.time;
+                            if (equipment.time > plugin.timeout) {
+                                defines.prettyConsole(colors.red("Validation timed out\n"));
+                                return callback({success: false, errorMessage: "timeout"}, {});
+                            }
+                            return success(json);
+                        }
+
+                        // This action has failed. Kill the validation
+                        defines.prettyConsole(colors.red("Killing validation: " + json.error + "\n"));
+                        callback({accepted: false, errorMessage: json.error});
+                    }
+                );
+            };
+        };
+    } else {
+
+        /**
+         * Execution equipment object
+         */
+        equipment = new function() {
+            this.start = new Date();
+            this.executionTime = function () {
+                var diff = new Date().getTime() - this.start.getTime();
+                return diff / 1000.0;
+            }
+
+            this.run = function(action, args, success) {
+                if (typeof success === 'undefined') {
+                    success = args;
+                    args = {};
+                }
+
+                js_validator.runAction(action, args, false,
+                    function (json) {
+                        if (json.success) {
+                            if (equipment.executionTime() > plugin.timeout) {
+                                defines.prettyConsole(colors.red("Experiment timed out\n"));
+                                return callback({success: false, errorMessage: "timeout"}, {});
+                            }
+                            return success(json);
+                        }
+
+                        // This action has failed. Kill the experiment
+                        defines.prettyConsole(colors.red("Killing experiment: " + json.error + "\n"));
+                        callback({accepted: false, errorMessage: json.error});
+                    }
+                );
+            };
+        };
+    }
+
+    plugin.run(equipment, experimentSpecification, function (results) {
+        defines.prettyConsole(colors.green("Experiment successful\n"));
+        callback({success:true, time: equipment.time}, results);
+    }, validate);
+}
+
+// 1.0.3 specification format
+/**
+ *
+ * @param plugin
+ * @param validate
+ * @param experimentSpecification
+ * @param callback
+ */
+js_spec_module.run1_0_3Specification = function(plugin, validate, experimentSpecification, callback) {
+    plugin.executeJSONSpecification(experimentSpecification, validate, callback);
+}
+
+/**
+ *
+ * @param experiment
+ * @param validate
+ * @param experimentSpecification
+ * @param callback
+ * @returns {*}
+ * @private
+ */
 js_spec_module._executeJSONSpecification = function (experiment, validate, experimentSpecification, callback) {
     if (experiment in js_spec_module._plugins) {
         var plugin = js_spec_module._plugins[experiment];
-        try {
-            plugin.executeJSONSpecification(experimentSpecification, validate, callback);
+
+        if (validate) {
+            defines.prettyConsole("running validation on " + experiment + "\n");
+        } else {
+            defines.prettyConsole("executing " + experiment + "\n");
         }
-        catch (err) {
-            return callback({accepted: false, errorMessage: err.toString()});
+
+        //try {
+        if (typeof plugin.run !== 'undefined' && typeof plugin.timeout !== 'undefined') { // 1.0.4
+            js_spec_module.run1_0_4Specification(plugin, validate, experimentSpecification, callback);
         }
+        else if (typeof plugin.executeJSONSpecification !== 'undefined') { // 1.0.3
+            js_spec_module.run1_0_3Specification(plugin, validate, experimentSpecification, callback);
+        }
+        //}
+        //catch (err) {
+        //    return callback({accepted: false, errorMessage: err.toString()});
+        //}
     }
     else
         return callback({accepted: false, errorMessage: experiment + " is an invalid plugin"});
 }
 
+/**
+ *
+ * @param format
+ * @param experiment
+ * @param validate
+ * @param experimentSpecification
+ * @param callback
+ * @returns {*}
+ */
 js_spec_module.executeJSONSpecification = function (format, experiment, validate, experimentSpecification, callback) {
     defines.verbose("Creating JavaScript");
     switch (format) {
@@ -163,7 +296,7 @@ js_spec_module.submitScript = function (broker, format, experiment, experimentSp
                 var vReport = {accepted: true, estRuntime: validate.time};
                 var experiment_data = {
                     type: "js_spec",
-                    guid: broker.getGuid(),
+                    guid: (typeof broker !== 'undefined') ? broker.getGuid() : undefined,
                     vReport: vReport,
                     format: format,
                     experiment: experiment,
@@ -236,3 +369,5 @@ js_spec_module.javaScriptFromSpecification = function (format, experiment, exper
             return callback({accepted: false, errorMessage: format + " is an invalid format"});
     }
 }
+
+

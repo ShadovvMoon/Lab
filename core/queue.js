@@ -200,22 +200,31 @@ queue_module.pollQueue = function()
         for (i=0; i < queue_module._ram_queue.length; i++)
         {
             var queued_experiment = queue_module._ram_queue[i];
-            var brokerName = broker.findBroker(queued_experiment['guid']).getName();
-            var runtime = queued_experiment['vReport']['estRuntime'];
-            if (calendar.hasAccess(brokerName, runtime))
-            {
+            if (typeof queued_experiment['guid'] !== 'undefined') {
+                var brokerName = broker.findBroker(queued_experiment['guid']).getName();
+                var runtime = queued_experiment['vReport']['estRuntime'];
+                if (calendar.hasAccess(brokerName, runtime))
+                {
+                    queue_module._ram_queue[i].queueStatus = -1;
+                    if (next_experiment == undefined)
+                    {
+                        selected_index = i;
+                        next_experiment = queued_experiment;
+                    }
+                    //break;
+                }
+                else
+                {
+                    queue_module._ram_queue[i].queueStatus = defines.kRestricted;
+                }
+            } else {
+                // This experiment was not submitted by a broker
                 queue_module._ram_queue[i].queueStatus = -1;
-
                 if (next_experiment == undefined)
                 {
                     selected_index = i;
                     next_experiment = queued_experiment;
                 }
-                //break;
-            }
-            else
-            {
-                queue_module._ram_queue[i].queueStatus = defines.kRestricted;
             }
         }
         queue_module._saveQueue();

@@ -310,8 +310,7 @@ experiment_module._runExperiment = function(experimentSpecification)
  * @param results
  * @private
  */
-experiment_module._finishExperiment = function(results)
-{
+experiment_module._finishExperiment = function(results) {
     defines.verbose("finishing experiment...");
 
     //Save the results to the database
@@ -322,11 +321,15 @@ experiment_module._finishExperiment = function(results)
     defines.verbose("experiment complete!");
 
     //Notify the broker that the results are now available
-    var broker_object = broker.findBroker(current_experiment_guid);
-    broker_object.sendData({action: "notify", experimentId: current_experiment}, function(response,status){
-        defines.verbose(response + " " + status);
-        defines.prettyLine("notifying broker", experimentId);
-    });
+    if (typeof current_experiment_guid !== 'undefined') {
+        var broker_object = broker.findBroker(current_experiment_guid);
+        if (typeof broker_object !== 'undefined') {
+            broker_object.sendData({action: "notify", experimentId: current_experiment}, function (response, status) {
+                defines.verbose(response + " " + status);
+                defines.prettyLine("notifying broker", experimentId);
+            });
+        }
+    }
     defines.prettyLine("continuing", "");
 
     //Remove the experiment from the queue
