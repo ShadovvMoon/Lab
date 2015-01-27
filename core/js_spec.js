@@ -112,6 +112,7 @@ js_spec_module.specificationPath = function() {
 
 js_spec_module._plugins = {};
 js_spec_module.setupExpress = function (app) {
+    defines.prettyLine("js.specification", defines.loaded);
     var files = fs.readdirSync(js_spec_module.specificationPath());
     for (var i in files) {
         var extension = path.extname(files[i]);
@@ -119,10 +120,11 @@ js_spec_module.setupExpress = function (app) {
             var plugin_name = files[i].slice(0, -3);
             var definition = require(path.join(js_spec_module.specificationPath(), files[i]));
             js_spec_module._plugins[plugin_name] = definition;
-            js_spec_module._log('specification ' + plugin_name + " " + defines.loaded);
+            defines.prettyLine("   " + plugin_name, defines.loaded);
+
+            //js_spec_module._log('specification ' + plugin_name + " " + defines.loaded);
         }
     }
-    defines.prettyLine("js.specification", defines.loaded);
 }
 
 // 1.0.4 specification format

@@ -18,12 +18,19 @@ module.exports.run = function(args, callback) {
 	function reload() {
 		defines.prettyConsole("Reloading js.engine.api\n");
 		js_engine.loadActions(function(err){
-			return finish(err);
+
+            defines.prettyConsole("Reloading js.spec.api\n");
+            jsspec._plugins = {};
+            jsspec.setupExpress();
+
+            return finish(err);
 		});
 	}
 
 	// Clear the existing cached files
 	function flush(reload) {
+
+        // Flush JSEngine
 		fs.readdir(js_engine.apiPath(), function(err, files) {
 	        if (err) {
 				return finish(err);
@@ -38,8 +45,29 @@ module.exports.run = function(args, callback) {
 					delete require.cache[require.resolve(path.join(js_engine.apiPath(), file))];
 				}
 				loop.next();
-			}, reload);
+			}, function() {
+
+                // Flush JSSpec
+                fs.readdir(jsspec.specificationPath(), function(err, files) {
+                    if (err) {
+                        return finish(err);
+                    }
+
+                    // Loop through the files
+                    defines.asyncLoop(files.length, function(loop) {
+                        var file = files[loop.iteration()];
+                        if (path.extname(file) == ".js") {
+
+                            // Load the actions from the file
+                            delete require.cache[require.resolve(path.join(jsspec.specificationPath(), file))];
+                        }
+                        loop.next();
+                    }, reload);
+                });
+            });
 		});
+
+
 	}
 	flush(reload);
 }
