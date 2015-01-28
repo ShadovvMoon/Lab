@@ -26,13 +26,12 @@
 
 var crypto 	    = require('crypto');
 var path 	    = require('path');
-var express     = require('express');
 var database    = require('./database');
 var queue       = require('./queue');
 var defines     = require('./defines');
 var http        = require('http');
 var fs	        = require('fs');
-var core        = require('./core');
+//var core        = require('./core');
 
 var SandCastle  = require('sandcastle').SandCastle;
 var Pool        = require('sandcastle').Pool;
@@ -423,6 +422,7 @@ js_engine_module.executeScript = function(script, validate, callback)
         };
     }(script, sandbox_id)); //Wrap the sandcastle
 
+    var core = require('./core');
     js_engine_module._log("executing script with " + core.port + " " + sandbox_id);
     script.run({lab_port: core.port, sandbox_id: sandbox_id});
 }

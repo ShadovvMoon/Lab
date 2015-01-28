@@ -25,7 +25,6 @@
  */
 
 crypto 	   		= require('crypto');
-express    		= require('express');
 database   		= require('./database');
 queue      		= require('./queue');
 experiment 		= require('./experiment');

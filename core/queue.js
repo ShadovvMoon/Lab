@@ -25,7 +25,6 @@
  */
 
 var crypto 	 = require('crypto');
-var express    = require('express');
 var database   = require('./database');
 var experiment = require('./experiment');
 var defines    = require('./defines');
@@ -69,7 +68,18 @@ queue_module.queueLength = function()
  */
 queue_module.estimatedWait = function()
 {
-    return 0;
+    //TODO: Handle queue priority
+
+    // Go through each experiment in the queue and calculate the total wait time
+    var time = 0;
+    for (var i = 0; i < queue_module._ram_queue.length; i++) {
+        var vReport = queue_module._ram_queue[i].vReport;
+        if (typeof vReport !== 'undefined') {
+            time += vReport.estRuntime;
+        }
+    }
+
+    return time;
 };
 
 /**
@@ -190,6 +200,7 @@ queue_module.pollQueue = function()
         clearTimeout(refreshTimer);
         refreshTimer = null;
     }
+
     if (queue_module._ram_queue.length > 0)
     {
         //Find an experiment with suitable access privileges

@@ -26,7 +26,7 @@
 
 var crypto = require('crypto');
 var path = require('path');
-var express = require('express');
+//var express = require('express');
 var database = require('./database');
 var queue = require('./queue');
 var defines = require('./defines');

@@ -25,7 +25,6 @@
  */
 
 crypto 	    = require('crypto');
-express     = require('express');
 database    = require('./database');
 queue       = require('./queue');
 defines     = require('./defines');
@@ -33,7 +32,6 @@ parseString = require('xml2js').parseString;
 js_engine   = require('./js_engine');
 js_spec     = require('./js_spec');
 broker      = require('./broker');
-core        = require('./core');
 
 var experiment_module = module.exports;
 var status_code = defines.idle_status;
@@ -53,6 +51,7 @@ experiment_module.setupExpress = function(app)
  */
 experiment_module.getLabConfiguration = function()
 {
+    var core = require('./core');
     return {navmenuPhoto:[{image:["http://"+ core.host +":"+ core.port+"/experiment/lab_photo.jpg"]}]};
 }
 
