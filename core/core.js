@@ -37,7 +37,8 @@ var jsspec      = require('./js_spec');
 var jsconsole   = require('./console');
 calendar = require('./calendar')
 var portscanner = require('portscanner');
-var readline = require('readline');
+var readline    = require('readline');
+var equipment   = require('./equipment');
 
 rl = readline.createInterface({
     input: process.stdin,
@@ -49,6 +50,7 @@ core.port   = undefined;
 core.host   = undefined;
 core.secret = undefined;
 core._default_port = 2020;
+core.queue = queue.createQueue();
 
 /**
  * Create a new lab server
@@ -175,7 +177,7 @@ core.createLab = (function (app,callback)
                     admin.setupExpress(app);
                     experiment.setupExpress(app);
                     jsengine.setupExpress(app);
-                    jsengine.loadActions(function(err) {
+                    equipment.load_plugins(function(err) {
                         if (err) {
                             return defines.prettyConsole("JSEngine error: " + err);
                         }
@@ -185,9 +187,11 @@ core.createLab = (function (app,callback)
                             }
 
                             jsvalidator.setupExpress(app);
-                            jsspec.setupExpress(app);
-                            queue.startQueue(function()
-                            {
+                            //jsspec.setupExpress(app);
+
+                            equipment.pollPlugins();
+
+                            //core.queue.load(function() {
                                 //Create the html server
                                 require("http").createServer(app).listen(app.get('port'), function()
                                 {
@@ -200,7 +204,7 @@ core.createLab = (function (app,callback)
                                     // Start the console
                                     jsconsole.run();
                                 });
-                            });
+                            //});
                         });
                     });
                 });

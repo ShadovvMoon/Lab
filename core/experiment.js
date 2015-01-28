@@ -58,6 +58,7 @@ experiment_module.getLabConfiguration = function()
 /**
  *
  * @returns {number}
+ * @deprecated
  */
 experiment_module.getStatusCode = function()
 {
@@ -67,6 +68,7 @@ experiment_module.getStatusCode = function()
 /**
  *
  * @returns {string}
+ * @deprecated
  */
 experiment_module.getStatus = function()
 {
@@ -147,6 +149,7 @@ function _parseEscapedString(str)
  * @param experimentSpecification
  * @param callback
  * @returns {*}
+ * @deprecated
  */
 experiment_module.validateExperiment = function(experimentSpecification, callback)
 {
@@ -224,7 +227,7 @@ experiment_module.experimentStatus = function(experimentID)
         }
         else
         {
-            if (queue.containsExperiment(''+experimentID))
+            if (require("core").queue.containsExperiment(''+experimentID))
             {
                 return defines.kInQueue;
             }
@@ -240,6 +243,7 @@ experiment_module.experimentStatus = function(experimentID)
  *
  * @param experimentSpecification
  * @private
+ * @deprecated
  */
 experiment_module._runExperiment = function(experimentSpecification)
 {

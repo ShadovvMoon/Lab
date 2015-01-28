@@ -16,7 +16,8 @@
     "sandcastle": "*",
     "portscanner": "*",
     "readline": "*",
-    "colors": "*"
+    "colors": "*",
+    "heap" : "*"
   },
   "author": {
     "name": "Samuel Colbran",

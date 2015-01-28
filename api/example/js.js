@@ -17,7 +17,7 @@ exports.javaScriptFromJSONSpecification = function(experimentSpecification, call
         {
             var x_value = x_array[0];
             x_array.shift();
-            sin(x_value, function(y_value) {
+            example.sin(x_value, function(y_value) {
                 y_array.push(y_value);
                 nextValue();
             });
@@ -43,7 +43,7 @@ exports.executeJSONSpecification = function(experimentSpecification, validate, c
         {
             var x_value = x_array[0];
             x_array.shift();
-            js_validator.runAction("sin", x_value, validate, function (y_array) { return function(json){
+            js_validator.runAction("example.sin", x_value, validate, function (y_array) { return function(json){
                 if (json.success != true)
                 {
                     return callback({success: false, errorMessage:"sin action failed"}, {});

@@ -26,7 +26,6 @@
 
 crypto 	   		= require('crypto');
 database   		= require('./database');
-queue      		= require('./queue');
 experiment 		= require('./experiment');
 defines    		= require('./defines');
 jsengine   		= require('./js_engine');

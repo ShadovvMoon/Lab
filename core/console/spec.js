@@ -1,7 +1,7 @@
 var js_engine = require('../js_engine');
 var js_validator = require('../js_validator');
 var jsspec = require('../js_spec');
-var queue = require('../queue');
+var queue = require('../queue_1.0.3');
 
 function usage() {
     defines.prettyConsole("   Usage: spec <spec> <input json>\n");
@@ -23,7 +23,6 @@ module.exports.run = function(args, callback) {
     // Submit an experiment to the queue
     jsspec.submitScript(undefined, 'json', args[1], inputs, function (clientReturn) {
         defines.prettyConsole(colors.yellow(JSON.stringify(clientReturn) + "\n"));
-        queue.pollQueue();
         callback(EXIT_SUCCESS);
     });
 }

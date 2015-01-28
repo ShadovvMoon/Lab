@@ -26,15 +26,16 @@
 
 var crypto = require('crypto');
 var path = require('path');
-//var express = require('express');
 var database = require('./database');
 var queue = require('./queue');
 var defines = require('./defines');
 var fs = require('fs');
 var parseString = require('xml2js').parseString;
 
+// Validator
 var js_validator = require('./js_validator');
 var js_spec_module = module.exports;
+
 
 /**
  *
@@ -106,26 +107,28 @@ js_spec_module._log = function (message) {
  *
  * @returns {*}
  */
-js_spec_module.specificationPath = function() {
-    return path.join(process.cwd(), "api/specifications");
-}
+/*
+ js_spec_module.specificationPath = function() {
+ return path.join(process.cwd(), "api/specifications");
+ }
 
-js_spec_module._plugins = {};
-js_spec_module.setupExpress = function (app) {
-    defines.prettyLine("js.specification", defines.loaded);
-    var files = fs.readdirSync(js_spec_module.specificationPath());
-    for (var i in files) {
-        var extension = path.extname(files[i]);
-        if (extension == ".js") {
-            var plugin_name = files[i].slice(0, -3);
-            var definition = require(path.join(js_spec_module.specificationPath(), files[i]));
-            js_spec_module._plugins[plugin_name] = definition;
-            defines.prettyLine("   " + plugin_name, defines.loaded);
+ js_spec_module._plugins = {};
+ js_spec_module.setupExpress = function (app) {
+ defines.prettyLine("js.specification", defines.loaded);
+ var files = fs.readdirSync(js_spec_module.specificationPath());
+ for (var i in files) {
+ var extension = path.extname(files[i]);
+ if (extension == ".js") {
+ var plugin_name = files[i].slice(0, -3);
+ var definition = require(path.join(js_spec_module.specificationPath(), files[i]));
+ js_spec_module._plugins[plugin_name] = definition;
+ defines.prettyLine("   " + plugin_name, defines.loaded);
 
-            //js_spec_module._log('specification ' + plugin_name + " " + defines.loaded);
-        }
-    }
-}
+ //js_spec_module._log('specification ' + plugin_name + " " + defines.loaded);
+ }
+ }
+ }
+ */
 
 // 1.0.4 specification format
 /**
@@ -149,8 +152,7 @@ js_spec_module.run1_0_4Specification = function(plugin, validate, experimentSpec
                     success = args;
                     args = {};
                 }
-
-                js_validator.runAction(action, args, true,
+                js_validator.runAction(plugin.equipment + "." + action, args, true,
                     function (json) {
                         if (json.success) {
                             equipment.time += json.options.time;
@@ -186,7 +188,7 @@ js_spec_module.run1_0_4Specification = function(plugin, validate, experimentSpec
                     args = {};
                 }
 
-                js_validator.runAction(action, args, false,
+                js_validator.runAction(plugin.equipment + "." + action, args, false,
                     function (json) {
                         if (json.success) {
                             if (equipment.executionTime() > plugin.timeout) {
@@ -228,6 +230,36 @@ js_spec_module.run1_0_3Specification = function(plugin, validate, experimentSpec
     plugin.executeJSONSpecification(experimentSpecification, validate, callback);
 }
 
+/*
+js_spec_module.findPlugin = function(experiment) {
+    var equip = require("./equipment");
+    var matches = experiment.match(RegExp("(.*)\\.(.*)"));
+    if (matches.length == 3) {
+        var equipment = matches[1];
+        var spec = matches[2];
+
+        if (equipment in equip.plugins()) {
+            var plugin = equip.plugins()[equipment].getSpecification(spec);
+            return plugin;
+        }
+    }
+};
+*/
+
+js_spec_module.findSpecification = function(experiment) {
+    var equip = require("./equipment");
+    var matches = experiment.match(RegExp("(.*)\\.(.*)"));
+    if (matches.length == 3) {
+        var equipment = matches[1];
+        var spec = matches[2];
+
+        if (equipment in equip.plugins()) {
+            var plugin = equip.plugins()[equipment].getSpecification(spec);
+            return plugin;
+        }
+    }
+};
+
 /**
  *
  * @param experiment
@@ -238,29 +270,29 @@ js_spec_module.run1_0_3Specification = function(plugin, validate, experimentSpec
  * @private
  */
 js_spec_module._executeJSONSpecification = function (experiment, validate, experimentSpecification, callback) {
-    if (experiment in js_spec_module._plugins) {
-        var plugin = js_spec_module._plugins[experiment];
 
-        if (validate) {
-            defines.prettyConsole("running validation on " + experiment + "\n");
-        } else {
-            defines.prettyConsole("executing " + experiment + "\n");
-        }
 
-        try {
-            if (typeof plugin.run !== 'undefined' && typeof plugin.timeout !== 'undefined') { // 1.0.4
-                js_spec_module.run1_0_4Specification(plugin, validate, experimentSpecification, callback);
-            }
-            else if (typeof plugin.executeJSONSpecification !== 'undefined') { // 1.0.3
-                js_spec_module.run1_0_3Specification(plugin, validate, experimentSpecification, callback);
-            }
+    /*
+    if (validate) {
+        defines.prettyConsole("running validation on " + experiment + "\n");
+    } else {
+        defines.prettyConsole("executing " + experiment + "\n");
+    }
+    */
+
+    var plugin = experiment;
+    try {
+        if (typeof plugin.run !== 'undefined' && typeof plugin.timeout !== 'undefined') { // 1.0.4
+            js_spec_module.run1_0_4Specification(plugin, validate, experimentSpecification, callback);
         }
-        catch (err) {
-            return callback({accepted: false, errorMessage: err.toString()});
+        else if (typeof plugin.executeJSONSpecification !== 'undefined') { // 1.0.3
+            js_spec_module.run1_0_3Specification(plugin, validate, experimentSpecification, callback);
         }
     }
-    else
-        return callback({accepted: false, errorMessage: experiment + " is an invalid plugin"});
+    catch (err) {
+        return callback({accepted: false, errorMessage: err.toString()});
+    }
+
 }
 
 /**
@@ -297,7 +329,35 @@ js_spec_module.executeJSONSpecification = function (format, experiment, validate
 }
 
 js_spec_module.submitScript = function (broker, format, experiment, experimentSpecification, callback) {
-    js_spec_module.executeJSONSpecification(format, experiment, true, experimentSpecification, function (callback) {
+
+    // Is this a valid specification?
+    function invalid_plugin() {
+        return callback({vReport: {accepted: false, errorMessage: experiment + " is an invalid name"}});
+    }
+
+    // Break up the equipment
+    var equip = require("./equipment");
+    var matches = experiment.match(RegExp("(.*)\\.(.*)"));
+    if (matches.length != 3) {
+        return invalid_plugin();
+    }
+
+    // Find the plugin
+    var equipment = matches[1];
+    var specification = matches[2];
+    if (!(equipment in equip.plugins())) {
+        return invalid_plugin();
+    }
+
+    // Find the specification
+    var plugin = equip.plugins()[equipment];
+    var spec   = plugin.getSpecification(specification);
+    if (typeof spec === 'undefined') {
+        return invalid_plugin();
+    }
+
+    // Execute the specification
+    js_spec_module.executeJSONSpecification(format, spec, true, experimentSpecification, function (callback) {
         return function (validate, result) {
             if (validate.success == true) {
                 var vReport = {accepted: true, estRuntime: validate.time};
@@ -306,21 +366,23 @@ js_spec_module.submitScript = function (broker, format, experiment, experimentSp
                     guid: (typeof broker !== 'undefined') ? broker.getGuid() : undefined,
                     vReport: vReport,
                     format: format,
-                    experiment: experiment,
+                    experiment: specification,
                     experimentSpecification: experimentSpecification
                 };
 
-                experiment_data['experimentID'] = queue.incrementExperimentId();
-                queue.add(experiment_data);
+                experiment_data['experimentID'] = plugin.queue.incrementExperimentId();
+                plugin.queue.add(experiment_data);
 
                 var returnedData = {
                     vReport: vReport,
                     minTimeToLive: "0",
                     experimentID: experiment_data['experimentID'],
-                    wait: {effectiveQueueLength: String(queue.queueLength()),
-                        estWait: String(queue.estimatedWait())}
+                    wait: {effectiveQueueLength: String(plugin.queue.queueLength()),
+                        estWait: String(plugin.queue.estimatedWait())}
                 };
 
+                // Poll the queue
+                plugin.pollQueue();
                 return callback(returnedData);
             }
             else {
@@ -331,7 +393,7 @@ js_spec_module.submitScript = function (broker, format, experiment, experimentSp
     }(callback))
 }
 
-//JS Engine stuff
+//JS Engine stuff //TODO: Fix
 js_spec_module._javaScriptFromJSONSpecification = function (experiment, experimentSpecification, callback) {
     if (experiment in js_spec_module._plugins) {
         var plugin = js_spec_module._plugins[experiment];

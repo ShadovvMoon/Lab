@@ -25,9 +25,7 @@
  */
 
 var crypto 	    = require('crypto');
-//var express     = require('express');
 var database    = require('./database');
-var queue       = require('./queue');
 var defines     = require('./defines');
 
 var js_engine   = require('./js_engine');
@@ -37,8 +35,7 @@ var jsvalidator_module = module.exports;
  *
  * @param app
  */
-jsvalidator_module.sendReplyToClient = function(res, data_dictionary)
-{
+jsvalidator_module.sendReplyToClient = function(res, data_dictionary) {
     var json_string = JSON.stringify(data_dictionary);
 
     res.writeHead(200, {'Content-Type': 'application/json'});
@@ -46,13 +43,30 @@ jsvalidator_module.sendReplyToClient = function(res, data_dictionary)
     res.end();
 }
 
-jsvalidator_module._log = function(message)
-{
+jsvalidator_module._log = function(message) {
     defines.verbose("JSValidator ("+defines.timeStamp()+")\t- "+message);
 }
 
-jsvalidator_module.runAction = function(action, options, validate, callback)
-{
+
+function findAction(experiment) {
+    var equip = require("./equipment");
+    var matches = experiment.match(RegExp("(.*)\\.(.*)"));
+    if (!matches) {
+        return undefined;
+    }
+
+    if (matches.length == 3) {
+        var equipment = matches[1];
+        var action = matches[2];
+
+        if (equipment in equip.plugins()) {
+            var plugin = equip.plugins()[equipment].getAction(action);
+            return plugin;
+        }
+    }
+};
+
+jsvalidator_module.runAction = function(action, options, validate, callback) {
     if (validate) {
         jsvalidator_module._log("validating action " +
             action +
@@ -66,26 +80,24 @@ jsvalidator_module.runAction = function(action, options, validate, callback)
             JSON.stringify(options));
     }
 
-    for (machine in js_engine.actions()) {
-        var actions = js_engine.actions()[machine];
-        if (action in actions) {
-            defines.prettyLine("   js.validator", action + "("+JSON.stringify(options)+")");
-            var action_code = actions[action];
-            return action_code(options, validate, function(callback){
-                return function (error, options) {
-
-                    if (error.success == true) {
-                        callback({success: true, json: options, options:error});
-                    }
-                    else {
-                        jsvalidator_module._log("action validation failed (" + error.info + ")");
-                        callback({success: false, error: error.info});
-                    }
-                };
-            }(callback));
-        }
+    var action_code = findAction(action);
+    if (typeof action_code === 'undefined') {
+        return callback({success: false, error: "unsupported action " + action_code});
     }
-    return callback({success: false, error: "unsupported action " + action});
+
+    defines.prettyLine("   js.validator", action + "("+JSON.stringify(options)+")");
+    return action_code(options, validate, function(callback){
+        return function (error, options) {
+
+            if (error.success == true) {
+                callback({success: true, json: options, options:error});
+            }
+            else {
+                jsvalidator_module._log("action validation failed (" + error.info + ")");
+                callback({success: false, error: error.info});
+            }
+        };
+    }(callback));
 }
 
 jsvalidator_module.setupExpress = function(app)

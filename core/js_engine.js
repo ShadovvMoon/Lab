@@ -27,7 +27,6 @@
 var crypto 	    = require('crypto');
 var path 	    = require('path');
 var database    = require('./database');
-var queue       = require('./queue');
 var defines     = require('./defines');
 var http        = require('http');
 var fs	        = require('fs');
@@ -37,44 +36,6 @@ var SandCastle  = require('sandcastle').SandCastle;
 var Pool        = require('sandcastle').Pool;
 
 var js_engine_module = module.exports;
-var js_actions = {};
-js_engine_module.apiPath = function() {
-    return path.join(process.cwd(), "api");
-};
-js_engine_module.actions = function() {
-    return js_actions;
-}
-
-js_validator    = require('./js_validator.js');
-js_engine_module.loadActions = function(callback) {
-    fs.readdir(js_engine_module.apiPath(), function(err, files) {
-        if (err) {
-            return callback(err);
-        }
-
-        // Loop through the files
-        defines.asyncLoop(files.length, function(loop) {
-            var file = files[loop.iteration()];
-            if (path.extname(file) == ".js") {
-
-                // Load the actions from the file
-                var actions = require(path.join(js_engine_module.apiPath(), file)).actions;
-                defines.prettyLine("   " + file, defines.loaded);
-
-                // Print out each action
-                for (key in actions) {
-                    defines.prettyConsole("      " + key + "\n");
-                }
-
-                // Store the actions
-                js_actions[file] = actions;
-            }
-            loop.next();
-        }, function() {
-            callback();
-        });
-    });
-}
 
 js_engine_module.setupExpress = function (app)
 {
@@ -228,15 +189,15 @@ js_engine_module.submitScript = function(broker, script, callback)
                     script : script
                 };
 
-                experiment_data['experimentID'] = queue.incrementExperimentId();
-                queue.add(experiment_data);
+                experiment_data['experimentID'] = queue_1.incrementExperimentId();
+                queue_1.add(experiment_data);
 
                 var returnedData = {
                     vReport:vReport,
                     minTimeToLive:"0",
                     experimentID:experiment_data['experimentID'],
-                    wait:{effectiveQueueLength: String(queue.queueLength()),
-                        estWait: String(queue.estimatedWait())}
+                    wait:{effectiveQueueLength: String(queue_1.queueLength()),
+                        estWait: String(queue_1.estimatedWait())}
                 };
 
                 return callback(returnedData);
@@ -264,10 +225,10 @@ jsEngineValidations = 0;
 js_engine_module.pollVQueue = function() {
     if (jsEngineValidations < defines.parallelValidation)
     {
-        if (queue.numberOfVElements()>0)
+        if (queue_1.numberOfVElements()>0)
         {
             defines.prettyLine("vqueue", "available");
-            var vobject = queue.nextVElement();
+            var vobject = queue_1.nextVElement();
 
             jsEngineValidations++;
             js_engine_module.executeScript(vobject.script, true, vobject.complete);
@@ -279,14 +240,14 @@ js_engine_module.pollVQueue = function() {
     }
     else
     {
-        defines.prettyLine("vqueue", "busy " + queue.numberOfVElements());
+        defines.prettyLine("vqueue", "busy " + queue_1.numberOfVElements());
     }
 }
 
 js_engine_module.validateScript = function(script, callback)
 {
     //Put the validation object in the new queue
-    queue.addVElement({script: script, complete: function(callback){
+    queue_1.addVElement({script: script, complete: function(callback){
         return function(vReport)
         {
             callback(vReport);
