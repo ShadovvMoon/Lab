@@ -52,11 +52,15 @@ db_module._load_db = function (database) {
  * @private
  */
 db_module._save_db = function (database, callback) {
-    if (typeof db_module._databases[database] !== 'undefined')
-    {
+    if (typeof db_module._databases[database] !== 'undefined') {
         defines.debug("Saving " + database);
         db_module._databases[database].save(callback);
+        return true;
     }
+    if (typeof callback !== 'undefined') {
+        return callback(false);
+    }
+    return false;
 };
 
 /**
@@ -74,6 +78,9 @@ db_module.valueForKey = function (database, key, callback) {
         {
             db_module._databases[database].get(key, function(callback){
                 return function(err, obj){
+                    if (err) {
+                        return callback(err, undefined);
+                    }
                     var copied = JSON.parse(JSON.stringify(obj));
                     defines.debug("Retrieving " + JSON.stringify(copied) + " from " + JSON.stringify(key) + " in " + database);
                     callback(err, copied);
@@ -143,15 +150,23 @@ db_module.setValueForKey = function (database, key, value, callback) {
 db_module.removeValueForKey = function(database, key, callback)
 {
     db_module._load_db(database);
-    if (typeof db_module._databases[database] !== 'undefined')
-    {
+    if (typeof db_module._databases[database] !== 'undefined') {
         defines.debug("Deleting " + key + " from " + database);
-        db_module._databases[database].remove(key, callback);
-        return db_module._save_db(callback);
+        if (typeof callback !== 'undefined') {
+            return db_module._databases[database].remove(key, function() {
+                return db_module._save_db(database, callback);
+            });
+        }
+
+        db_module._databases[database].remove(key);
+        db_module._save_db(database);
+        return true;
     }
+
     defines.debug("Cannot remove value for " + key + " because " + database + " is not loaded.");
-    if (typeof callback !== 'undefined')
-        callback(false);
+    if (typeof callback !== 'undefined') {
+        return callback(false);
+    }
     return false;
 }
 
