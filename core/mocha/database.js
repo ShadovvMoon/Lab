@@ -135,9 +135,7 @@ describe('database', function(){
                     assert.equal(err, undefined);
                     assert.equal(stored, "foo");
                     assert.equal(db.getKeys("test-remove").equals(['sample']), true);
-                    console.log("foo");
                     db.removeValueForKey("test-remove", "sample", function() {
-                        console.log("bar");
                         assert.equal(db.getKeys("test-remove").equals([]), true);
                         done();
                     });
