@@ -1,7 +1,6 @@
 var js_engine = require('../js_engine');
 var js_validator = require('../js_validator');
 var jsspec = require('../js_spec');
-var queue = require('../queue_1.0.3');
 
 function usage() {
     defines.prettyConsole("   Usage: spec <spec> <input json>\n");
