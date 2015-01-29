@@ -123,13 +123,13 @@ else
                     if (plugin == "test") continue;
                     %><h6><%=plugin%></h6><%
                     for (spec in plugins[plugin]._specifications) {
-                        var permission = plugin + "_" + spec;
+                        var permission = plugin + "." + spec;
                         var checked = (permissions.specifications.indexOf(permission) != -1) ? "checked":"";
 
                         %>
                         <div class="checkbox">
                             <label>
-                                <input name="specification_<%=plugin%>_<%=spec%>" type="checkbox" <%= checked%>> <%= spec%>
+                                <input name="specification_<%=plugin%>.<%=spec%>" type="checkbox" <%= checked%>> <%= spec%>
                             </label>
                         </div>
                         <%
