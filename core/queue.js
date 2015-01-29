@@ -106,7 +106,11 @@ module.exports.createQueue = function() {
          * @returns {*}
          */
         queue.pop = function() {
-            return Heap.pop(queue._heap, heap_compare);
+            var result = Heap.pop(queue._heap, heap_compare);
+            queue.save(function(){
+
+            });
+            return result;
         }
 
         /**
