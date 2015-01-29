@@ -36,6 +36,7 @@ module.exports.receiveData = function(broker, json) {
     console.log(experimentSpecification);
     console.log(specificationID);
     console.log(params);
+
     //Permissions check
     if (!broker._permissions.batched) {
         return broker.sendError("You do not have permission to submit batched lab experiments");
@@ -64,20 +65,20 @@ module.exports.receiveData = function(broker, json) {
 
     defines.verbose("Submitted experiment " + specificationFormat);
     if (specificationFormat == "xml" || specificationFormat == "json" || typeof specificationFormat == 'undefined') {
+
+        // Which equipment/specification is this?
+        //specificationID
+        /*var split = specificationID.split('.');
+        var equipment = split[0];
+        var specification = split[1];*/
+
         specificationFormat = (specificationFormat == 'json') ? 'json' : 'xml';
-        /*var useJSEngine = false; //NO reason to use the JS engine!
-         if (useJSEngine) {
-         defines.verbose("Creating specification with JSSpec");
-         jsspec.javaScriptFromSpecification(specificationFormat, specificationID,
-         experimentSpecification, submission);
-         }
-         else {*/
         jsspec.submitScript(broker, specificationFormat,
             specificationID, experimentSpecification,
             function (client, broker) {
                 return function (clientReturn) {
+                    defines.prettyConsole(colors.yellow(JSON.stringify(clientReturn))+"\n");
                     broker.sendData(clientReturn);
-                    queue.pollQueue();
                 };
             }(broker._client, broker));
         //}

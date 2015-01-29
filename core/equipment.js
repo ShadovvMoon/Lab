@@ -167,7 +167,7 @@ function build_plugin(name, actions, specifications, callback) {
                             if (validate.success === true) {
                                 defines.verbose("experiment successful");
                                 plugin._status_code = defines.finishing_status;
-                                plugin._finishExperiment(result.json);
+                                plugin._finishExperiment(result);
                             }
                             else {
                                 defines.prettyConsole(colors.red("experiment failed - " + JSON.stringify(validate.errorMessage) + "\n"));
@@ -196,7 +196,7 @@ function build_plugin(name, actions, specifications, callback) {
             plugin._runExperiment(experiment_data);
         }
 
-        plugin._finishExperiment = function(results) {
+        plugin._finishExperiment = function(json) {
             defines.verbose("finishing experiment...");
 
             //Save the results to the database
@@ -204,30 +204,43 @@ function build_plugin(name, actions, specifications, callback) {
 
             plugin.queue.pop(); // remove the experiment from the queue
             defines.prettyLine(plugin.name, "finishing " + current_experiment);
-            database.setValueForKey("results-"+plugin.name, current_experiment, results, undefined);
 
-            //Turn off the equipment
-            defines.verbose("experiment complete!");
 
-            //Notify the broker that the results are now available
-            if (typeof plugin._experimentGUID !== 'undefined') {
-                var broker_object = broker.findBroker(plugin._experimentGUID);
-                if (typeof broker_object !== 'undefined') {
-                    broker_object.sendData({action: "notify",
-                        experimentId: plugin._experimentId
-                    }, function (response, status) {
-                        defines.verbose(response + " " + status);
-                        defines.prettyLine("notifying broker", experimentId);
-                    });
+            // TODO: Use SQL
+            database.valueForKey("results", plugin.name, function(err, results) {
+                defines.prettyConsole(colors.cyan("saving results..."));
+                if (typeof results === 'undefined') {
+                    results = {};
                 }
-            }
 
-            //Remove the experiment from the queue
-            //queue.removeExperiment(current_experiment);
-            plugin._status_code = defines.idle_status;
+                results[current_experiment] = json;
+                database.setValueForKey("results", plugin.name, results, function() {
+                    defines.prettyConsole(colors.green("done!\n"));
 
-            //Poll the queue (start the next experiment in the queue)
-            plugin.pollQueue();
+                    //Turn off the equipment
+                    defines.verbose("experiment complete!");
+
+                    //Notify the broker that the results are now available
+                    if (typeof plugin._experimentGUID !== 'undefined') {
+                        var broker_object = broker.findBroker(plugin._experimentGUID);
+                        if (typeof broker_object !== 'undefined') {
+                            broker_object.sendData({action: "notify",
+                                experimentId: plugin._experimentId
+                            }, function (response, status) {
+                                defines.verbose(response + " " + status);
+                                defines.prettyLine("notifying broker", experimentId);
+                            });
+                        }
+                    }
+
+                    //Remove the experiment from the queue
+                    //queue.removeExperiment(current_experiment);
+                    plugin._status_code = defines.idle_status;
+
+                    //Poll the queue (start the next experiment in the queue)
+                    plugin.pollQueue();
+                });
+            });
         }
 
         /**

@@ -93,7 +93,7 @@ module.exports.createQueue = function() {
             var guid = experiment['guid'];
             if (typeof guid !== 'undefined') {
                 var broker_name = broker.findBroker(guid).getName();
-                var runtime = queued_experiment['vReport']['estRuntime'];
+                var runtime = experiment['vReport']['estRuntime'];
                 if (!calendar.hasAccess(broker_name, runtime)) {
                     return true;
                 }

@@ -26,6 +26,36 @@
 
 module.exports.receiveData = function(broker, json) {
     var experimentID     = json.params['experimentID'];
+
+    // Is this experiment sitting in one of the queues?
+    var equipment = require("../equipment");
+    for (key in equipment.plugins()) {
+        var plugin = equipment.plugins()[key];
+        if (plugin.queue.containsExperiment(experimentID)) {
+            experimentStatus = plugin.queue.experimentStatus(experimentID);
+            return broker.sendData({statusCode: experimentStatus});
+        }
+    }
+
+    // Has this experiment been completed?
+    var plugin_results = database.getKeys("results");
+    for (key in plugin_results) {
+        database.valueForKey("results", key, function(results) {
+            if (experimentID in results) {
+                return broker.sendData({statusCode: defines.kFinished,
+                    experimentResults: results[experimentID]});
+            }
+        });
+    }
+
+    // We haven't found the experiment. It must not exist.
+    return broker.sendData({
+        statusCode: defines.kInvalidExperiment
+    });
+
+
+
+    /*
     var experimentStatus = experiment.experimentStatus(experimentID);
 
     var completed_experiments = database.getKeys("results");
@@ -39,5 +69,6 @@ module.exports.receiveData = function(broker, json) {
     else {
         return broker.sendData({statusCode: experimentStatus});
     }
+    */
 
 }
