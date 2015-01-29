@@ -24,8 +24,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var Heap = require('heap');
-var db = require("./database");
+var Heap    = require('heap');
+var db      = require("./database");
+var defines = require("./defines");
 
 module.exports.queueState = Object.freeze({
     EMPTY: 1,
@@ -58,6 +59,7 @@ module.exports.createQueue = function() {
          */
         queue.add = function(experiment) {
             Heap.push(queue._heap, experiment, heap_compare);
+            queue.isRestricted(experiment);
             queue.save(function() {
 
             });
@@ -104,8 +106,12 @@ module.exports.createQueue = function() {
                 var broker_name = broker.findBroker(guid).getName();
                 var runtime = experiment['vReport']['estRuntime'];
                 if (!calendar.hasAccess(broker_name, runtime)) {
+                    experiment.queueStatus = defines.kRestricted;
                     return true;
                 }
+            }
+            if (experiment.queueStatus == defines.kRestricted) {
+                experiment.queueStatus = defines.kInQueue;
             }
             return false;
         };
