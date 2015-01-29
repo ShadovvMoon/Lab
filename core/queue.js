@@ -40,7 +40,16 @@ module.exports.createQueue = function() {
         queue._heap = undefined;
 
         var heap_compare = function (a, b) {
-            return parseInt(a.experimentID) - parseInt(b.experimentID);
+            var aRestrict = queue.isRestricted(a);
+            var bRestrict = queue.isRestricted(b);
+
+            if (!aRestrict && bRestrict) {
+                return -1;
+            } else if (aRestrict && !bRestrict) {
+                return 1;
+            } else {
+                return parseInt(a.experimentID) - parseInt(b.experimentID);
+            }
         };
 
         /**
