@@ -202,6 +202,7 @@ function build_plugin(name, actions, specifications, callback) {
             //Save the results to the database
             var current_experiment = plugin._runningExperiment();//queue.nextExperiment()-1;
 
+            plugin.queue.pop(); // remove the experiment from the queue
             defines.prettyLine(plugin.name, "finishing " + current_experiment);
             database.setValueForKey("results-"+plugin.name, current_experiment, results, undefined);
 
@@ -257,7 +258,7 @@ function build_plugin(name, actions, specifications, callback) {
                     }
 
                     // Start the next experiment
-                    var experiment = plugin.queue.pop();
+                    var experiment = plugin.queue.getNext();
                     var experimentId = experiment['experimentID'];
                     defines.prettyLine(plugin.name, "starting " + experimentId);
                     experiment.queueStatus = defines.kRunning;

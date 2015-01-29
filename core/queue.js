@@ -169,6 +169,31 @@ module.exports.createQueue = function() {
         };
 
         /**
+         *
+         * @param experimentID
+         * @returns {boolean}
+         */
+        queue.removeExperiment = function(experimentID) {
+            var ram_queue = queue._heap;
+            var i;
+            for (i=0; i < ram_queue.length; i++)
+            {
+                var queued_experiment = ram_queue[i];
+                if (parseInt(queued_experiment['experimentID']) == parseInt(experimentID))
+                {
+                    defines.prettyLine("experiment queue", "deleted " + experimentID);
+                    ram_queue.splice(i,1);
+                    queue.save(function() {
+
+                    });
+                    return true;
+                }
+            }
+            defines.prettyLine("experiment queue", "missing" + experimentID);
+            return false;
+        };
+
+        /**
          * Return the current queue length
          * @returns {Number} - queue length
          */

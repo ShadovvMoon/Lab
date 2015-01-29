@@ -348,7 +348,13 @@ root_module.setupExpress = function (app)
         if (user_authenticated(req,res))
         {
             var experimentID = req.query.id;
-            queue.removeExperiment(experimentID);
+            var equipment = req.query.equipment;
+
+            // Find the plugin
+            if (equipment in require("./equipment").plugins()) {
+                require("./equipment").plugins()[equipment].queue.removeExperiment(experimentID);
+            }
+
             res.redirect('/queue');
         }
     });

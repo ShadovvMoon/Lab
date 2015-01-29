@@ -2,32 +2,11 @@
 Lab Server - Queue
 <%- include header.ejs %>
 <%
-var queue_cache = database.valueForKey("queue", "cache");
-queue_cache = (typeof queue_cache !== 'undefined')?queue_cache:[];
-var totalRuntime = 0.0;
-for (var i=0; i < queue_cache.length; i++)
-{
-    var setting = queue_cache[i];
-    var vReport = setting['vReport'];
-    var estRuntime  = parseFloat((typeof vReport !== 'undefined') ? vReport['estRuntime'] : "0");
-    totalRuntime += estRuntime;
-}
-var date = new Date();
-date.setHours(0);
-date.setMinutes(0);
 
-var runtime = date.setSeconds(Math.round(totalRuntime));
-var hours = date.getHours();
-var mins = date.getMinutes();
-var secs = date.getSeconds();
-
+// Display each queue separately
 %>
-<script src="js/queue.js"></script>
-<!--<meta http-equiv="refresh" content="5" >-->
-<h4>Queue</h4>
-Runtime: <%= hours %> hours,<%= mins %> minutes and <%= secs %> seconds<br/><br/>
+<h3>Queues</h3>
 <h5>Key</h5>
-
 <table class="table">
     <tr>
         <td class="default" width="20px" align="center">Queued</td>
@@ -42,69 +21,106 @@ Runtime: <%= hours %> hours,<%= mins %> minutes and <%= secs %> seconds<br/><br/
         <td with="100%">The experiment cannot begin execution because another service broker has reserved this timeslot. See <a href="schedule"><i class="glyphicon glyphicon-calendar"></i> Schedule</a>.</td>
     </tr>
 </table>
+<script src="js/queue.js"></script>
+<%
+    var queues = database.getKeys("queue");
+    for (var i = 0; i < queues.length; i++) {
+        var queue = queues[i];
+        var queue_cache = database.valueForKey("queue", queue);
+        if (queue_cache.length > 0) {
+            // Remove the queue-
+            var queue_name = queue.substring("queue-".length);
+            %><h3><%=queue_name%></h3><%
+
+            var totalRuntime = 0.0;
+            for (var i=0; i < queue_cache.length; i++)
+            {
+                var setting = queue_cache[i];
+                var vReport = setting['vReport'];
+                var estRuntime  = parseFloat((typeof vReport !== 'undefined') ? vReport['estRuntime'] : "0");
+                totalRuntime += estRuntime;
+            }
+            var date = new Date();
+            date.setHours(0);
+            date.setMinutes(0);
+
+            var runtime = date.setSeconds(Math.round(totalRuntime));
+            var hours = date.getHours();
+            var mins = date.getMinutes();
+            var secs = date.getSeconds();
+
+            %>
+            Runtime: <%= hours %> hours, <%= mins %> minutes and <%= secs %> seconds<br/><br/>
+            <hr>
+            <div class="table-responsive" style="display:block;word-break:break-all; " id="wrapper-global-table">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th class="header headerSortUp" style="min-width:60px">
+                            <div align="center">ID</div>
+                        </th>
+                        <th class="header"><div align="center">Broker</div></th>
+                        <th class="header"><div align="center">Runtime</div></th>
+                        <th class="header"><div align="center">Type</div></th>
+                        <th class="header" style="min-width:41px">
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody id="wrappers-table">
+                    <%
+
+                    for (var i=0; i < queue_cache.length; i++)
+                    {
+                        var setting = queue_cache[i];
+                        var experimentID = setting['experimentID'];
 
 
-<hr>
-<div class="table-responsive" style="display:block;word-break:break-all; " id="wrapper-global-table">
-    <table class="table table-hover">
-        <thead>
-        <tr>
-            <th class="header headerSortUp" style="min-width:60px">
-                <div align="center">ID</div>
-            </th>
-            <th class="header"><div align="center">Broker</div></th>
-            <th class="header"><div align="center">Runtime</div></th>
-            <th class="header"><div align="center">Type</div></th>
-            <th class="header" style="min-width:41px">
-            </th>
-        </tr>
-        </thead>
-        <tbody id="wrappers-table">
-        <%
+                        var guid = database.valueForKey("brokers", setting['guid']);
+                        var broker_guid = (typeof guid !== 'undefined') ? guid['name'] : "None";
+                        var queueStatus = setting['queueStatus'];
+                        var type = setting['type'];
 
-        for (var i=0; i < queue_cache.length; i++)
-        {
-            var setting = queue_cache[i];
-            var experimentID = setting['experimentID'];
-            var broker_guid = database.valueForKey("brokers", setting['guid'])['name'];
-            var queueStatus = setting['queueStatus'];
-            var type = setting['type'];
+                        var experimentType = "Unknown";
+                        if (type == "js_engine")
+                            experimentType = "Evaluation";
+                        else if (type == "js_spec")
+                            experimentType = "Specification";
+                        else if (type == "js_interactive")
+                            experimentType = "Interactive";
 
-            var experimentType = "Unknown";
-            if (type == "js_engine")
-                experimentType = "Evaluation";
-            else if (type == "js_spec")
-                experimentType = "Specification";
-            else if (type == "js_interactive")
-                experimentType = "Interactive";
+                        var table_class = 'default';
+                        if (queueStatus == 2)
+                            table_class = 'success';
+                        else if (queueStatus == 7)
+                            table_class = 'danger';
 
-            var table_class = 'default';
-            if (queueStatus == 2)
-                table_class = 'success';
-            else if (queueStatus == 7)
-                table_class = 'danger';
+                        var edel = "queue_delete?id="+experimentID+"&equipment="+queue_name;
+                        var vReport = setting['vReport'];
+                        var estRuntime  = Math.round(parseFloat((typeof vReport !== 'undefined') ? vReport['estRuntime'] : "0"));
+                    %>
+                    <tr class="<%= table_class %>">
+                        <td align="center"><%= experimentID %></td>
+                        <td align="center"><%= broker_guid %></td>
+                        <td align="center"><%= estRuntime %></td>
+                        <td align="center"><%= experimentType %></td>
 
-            var edel = "queue_delete?id=" + experimentID;
-            var vReport = setting['vReport'];
-            var estRuntime  = Math.round(parseFloat((typeof vReport !== 'undefined') ? vReport['estRuntime'] : "0"));
-        %>
-        <tr class="<%= table_class %>">
-            <td align="center"><%= experimentID %></td>
-            <td align="center"><%= broker_guid %></td>
-            <td align="center"><%= estRuntime %></td>
-            <td align="center"><%= experimentType %></td>
+                        <% if (queueStatus == 2) { %>
+                        <td align="center"><font color="#AAAAAA">Delete<font></td>
+                        <% } else { %>
+                        <td align="center"><a href="<%=edel%>">Delete</a></td>
+                        <% }%>
 
-            <% if (queueStatus == 2) { %>
-            <td align="center"><font color="#AAAAAA">Delete<font></td>
-            <% } else { %>
-            <td align="center"><a href="<%=edel%>">Delete</a></td>
-            <% }%>
+                    </tr>
+                    <%}%>
+                    </tbody>
+                </table>
+            </div>
+            <%
+        }
+    }
 
-        </tr>
-        <%}%>
-        </tbody>
-    </table>
-</div>
+%>
+
 
 <!-- JavaScript -->
 <script src="js/jquery-1.10.2.js"></script>
