@@ -384,7 +384,10 @@ root_module.setupExpress = function (app)
         {
             fs.readFile('core/html/edit_broker.ejs','utf-8',function (err, html_data)
             {
-                return root_module.renderEJS(req,res,html_data, req.query);
+                return root_module.renderEJS(req,res,html_data, {
+                    query: req.query,
+                    equipment: require('./equipment')
+                });
             });
         }
     });

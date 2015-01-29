@@ -1,7 +1,8 @@
 <%- include title.ejs %>
 Lab Server - Editing
 <%
-var id = page_options.id;
+var id = page_options.query.id;
+var equipment = page_options.equipment;
 var broker_name = '';
 var broker_key  = '';
 var delete_url  = '';
@@ -117,24 +118,24 @@ else
             <hr/>
             <h5>Specifications <!--(<a href="">Select all</a>)--></h5>
             <%
-            //Get a list of specifications from the js_specifications folder.
-            var files = fs.readdirSync('./api/specifications/');
-            var i;
-                    for (i=0; i < files.length; i++)
-            {
-                var extension = path.extname(files[i]);
-                    if (extension == ".js") {
-                var plugin_name = files[i].slice(0, -3);
-                var checked = (permissions.specifications.indexOf(plugin_name) != -1) ? "checked":"";
-            %>
-            <div class="checkbox">
-                <label>
-                    <input name="specification_<%= plugin_name%>" type="checkbox" <%= checked%>> <%= plugin_name%>
-                </label>
-            </div>
-            <%
-            }
-            }
+                var plugins = equipment.plugins();
+                for (plugin in plugins) {
+                    if (plugin == "test") continue;
+                    %><h6><%=plugin%></h6><%
+                    for (spec in plugins[plugin]._specifications) {
+                        var permission = plugin + "_" + spec;
+                        var checked = (permissions.specifications.indexOf(permission) != -1) ? "checked":"";
+
+                        %>
+                        <div class="checkbox">
+                            <label>
+                                <input name="specification_<%=plugin%>_<%=spec%>" type="checkbox" <%= checked%>> <%= spec%>
+                            </label>
+                        </div>
+                        <%
+                    }
+                    %><br/><%
+                }
             %>
             <!--<hr/>
 		<h5>Maximum execution time (minutes)</h5>
@@ -157,15 +158,20 @@ else
                 <hr/>
                 <h4>API (<a href="">Select all</a>)</h4>
                 <%
+                    machine = "disabled";
+                    action_name = "disabled";
+                    checked = false;
+
                 //Get a list of api functions from the js_specifications folder.
-                        for (machine in js_engine.actions()) {
-                %><h5><%= machine %></h5><%
+                /*for (machine in js_engine.actions()) {
+                //%><h5><%= machine %></h5><%
                     var actions = Object.keys(js_engine.actions()[machine]);
                     var i;
                         for (i=0; i < actions.length; i++)
                 {
                     var action_name = actions[i];
                     var checked = (permissions.apis.indexOf(action_name) != -1) ? "checked":"";
+                */
                 %>
                 <div class="checkbox">
                     <label>
@@ -173,8 +179,8 @@ else
                     </label>
                 </div>
                 <%
-                }
-                }
+                //}
+                //}
 
                 %>
                 <hr/>
@@ -216,7 +222,7 @@ else
     <!-- JSEngine -->
     <% var is_checked = permsStr("js_engine"); %>
     <%= is_checked %>
-    <div class="checkbox">
+    <div class="checkbox" style="display:none">
         <div class="bs-callout bs-callout-danger">
             <label>
                 <input name="jsengine" type="checkbox" <%=is_checked%>> <h4>Javascript engine</h4>
