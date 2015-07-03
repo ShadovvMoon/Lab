@@ -28,7 +28,7 @@ var db_module = module.exports;
 var defines   = require("./defines");
 
 //Internal variables.
-db_module._root_database = require('ministore')('database');
+db_module._root_database = require('./ministore')('database');
 
 /**
  * Adds a database to the _databases dictionary

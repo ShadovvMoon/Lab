@@ -39,8 +39,9 @@ module.exports.receiveData = function(broker, json) {
 
     // Has this experiment been completed?
     var plugin_results = database.getKeys("results");
-    for (key in plugin_results) {
-        database.valueForKey("results", key, function(results) {
+	for (var i = 0; i < plugin_results.length; i++) {	
+		var key = plugin_results[i];
+        database.valueForKey("results", key, function(err, results) { //TODO: error handling
             if (experimentID in results) {
                 return broker.sendData({statusCode: defines.kFinished,
                     experimentResults: results[experimentID]});
